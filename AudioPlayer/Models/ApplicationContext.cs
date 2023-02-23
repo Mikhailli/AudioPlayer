@@ -1,17 +1,13 @@
 ﻿#nullable enable
-using Microsoft.EntityFrameworkCore;
+using System.Data.Entity;
 
 namespace AudioPlayer.Models;
 
 public sealed class ApplicationContext : DbContext
 {
-    public ApplicationContext(DbContextOptions<ApplicationContext> options)
-        : base(options)
+    public ApplicationContext()
+        : base("DefaultConnection")
     {
             
     }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=audioplayer;Trusted_Connection=True;");
-        
 }

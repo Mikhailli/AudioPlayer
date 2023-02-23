@@ -1,6 +1,5 @@
 ﻿using AudioPlayer.Models;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,8 +17,6 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddMvc();
-        var connection = Configuration.GetConnectionString("DefaultConnection");
-        services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
         services.AddControllersWithViews();
         //services.AddHttpClient<>();
     }
