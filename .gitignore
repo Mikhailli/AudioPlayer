@@ -3,3 +3,6 @@
 .idea/.idea.AudioPlayer/.idea
 AudioPlayer/obj
 AudioPlayer/obj
+AudioPlayer/bin/Debug/net6.0
+.idea/config/applicationhost.config
+*.cache
