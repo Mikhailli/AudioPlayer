@@ -1,0 +1,6 @@
+C:\Users\Михаил\source\repos\AudioPlayer\AudioPlayerLibrary\bin\Debug\AudioPlayerLibrary.dll
+C:\Users\Михаил\source\repos\AudioPlayer\AudioPlayerLibrary\bin\Debug\AudioPlayerLibrary.pdb
+C:\Users\Михаил\source\repos\AudioPlayer\AudioPlayerLibrary\obj\Debug\AudioPlayerLibrary.csproj.AssemblyReference.cache
+C:\Users\Михаил\source\repos\AudioPlayer\AudioPlayerLibrary\obj\Debug\AudioPlayerLibrary.csproj.CoreCompileInputs.cache
+C:\Users\Михаил\source\repos\AudioPlayer\AudioPlayerLibrary\obj\Debug\AudioPlayerLibrary.dll
+C:\Users\Михаил\source\repos\AudioPlayer\AudioPlayerLibrary\obj\Debug\AudioPlayerLibrary.pdb
