@@ -12,8 +12,8 @@ namespace AudioPlayer.Data.Interfaces;
 
 public class EFGenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : BaseEntity
 {
-    private readonly DbContext _dbContext;
-    private readonly DbSet<TEntity> _dbSet;
+    protected readonly DbContext _dbContext;
+    protected readonly DbSet<TEntity> _dbSet;
 
     protected EFGenericRepository(DbContext dbContext)
     {
@@ -97,7 +97,7 @@ public class EFGenericRepository<TEntity> : IGenericRepository<TEntity> where TE
         return _dbSet.Create();
     }
 
-    public TEntity Add(TEntity entity)
+    public virtual TEntity Add(TEntity entity)
     {
         return _dbSet.Add(entity);
     }
@@ -107,7 +107,7 @@ public class EFGenericRepository<TEntity> : IGenericRepository<TEntity> where TE
         _dbContext.Entry(entity).State = EntityState.Modified;
     }
 
-    public void Delete(TEntity entity)
+    public virtual void Delete(TEntity entity)
     {
         if (_dbContext.Entry(entity).State == EntityState.Detached)
         {
@@ -146,5 +146,10 @@ public class EFGenericRepository<TEntity> : IGenericRepository<TEntity> where TE
         _dbContext.Entry(clone).CurrentValues.SetValues(originalEntityValues);
 
         return clone;
+    }
+
+    public void CommitChanges()
+    {
+        _dbContext.SaveChanges();
     }
 }

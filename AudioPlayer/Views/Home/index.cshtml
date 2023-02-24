@@ -1,16 +1,20 @@
-﻿@{
-    Layout = null;
+﻿@model IEnumerable<AudioPlayer.Models.Audio>
+@{
+    ViewData["Title"] = "Добавление файла";
 }
-
-<!DOCTYPE html>
-
-<html>
-<head>
-    <title>title</title>
-</head>
-<body>
-<div>
-      
-</div>
-</body>
-</html>
+<h3>Выберите файл для загрузки</h3>
+<form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
+    <input type="file" accept="audio/*" name="uploadedFile" /><br>
+    <input type="submit" value="Загрузить" />
+</form>
+ @*<Grid x:Name="LayoutRoot">
+     <MediaElement x:Name="media1" Source="Video.mp4" AutoPlay="False" />
+     <Button x:Name="playButton" Content="Play" Click="playButton_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="60" Height="25"/>
+     <Button x:Name="pauseButton" Content="Pause" Click="pauseButton_Click"  VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="60" Height="25"/>
+     <Button x:Name="stopButton" Content="Stop" Click="stopButton_Click"  VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="60" Height="25" />
+ </Grid>*@
+<h3>Все файлы</h3>
+@foreach(var f in Model)
+{
+    <p><img src="@Url.Content(f.Path)"></p>
+}
