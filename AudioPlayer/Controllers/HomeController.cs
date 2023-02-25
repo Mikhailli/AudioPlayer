@@ -27,8 +27,7 @@ public class HomeController : Controller
         return View(repo.GetAll().ToList());
     }
     
-    [HttpPost]
-    public async Task<IActionResult> Index(IFormFile uploadedFile)
+    public void Create(IFormFile uploadedFile)
     {
         if (uploadedFile != null)
         {
@@ -50,8 +49,7 @@ public class HomeController : Controller
             }
            
         }
-            
-        return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
+        
     }
 
     private async void SaveFile(IFormFile uploadedFile, string fullPath)

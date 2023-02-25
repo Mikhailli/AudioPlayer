@@ -2,11 +2,34 @@
 @{
     ViewData["Title"] = "Добавление файла";
 }
+
+<style>
+.audio-track {
+    width: 150px;
+    height: 3px;
+    background-color: #dddddd;
+    margin: 20px 0
+}
+
+.time {
+    width: 0;
+    height: 3px;
+    background-color: #474747
+}
+</style>
 <h3>Выберите файл для загрузки</h3>
-<form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
+<form asp-action="Create" asp-controller="Home" enctype="multipart/form-data">
     <input type="file" accept="audio/*" name="uploadedFile" /><br>
-    <input type="submit" value="Загрузить" />
+    <input id="submit" type="submit" value="Загрузить" />
 </form>
+<audio id="audio"></audio>
+<div id="controls">
+    <div class="audio-track"><div class="time"></div></div>
+    <button class="play">Play</button>
+    <button class="pause">Pause</button>
+    <button class="prev">&#60;prev</button>
+    <button class="next">next&#62;</button>
+</div>
  @*<Grid x:Name="LayoutRoot">
      <MediaElement x:Name="media1" Source="Video.mp4" AutoPlay="False" />
      <Button x:Name="playButton" Content="Play" Click="playButton_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="60" Height="25"/>
@@ -16,5 +39,111 @@
 <h3>Все файлы</h3>
 @foreach(var f in Model)
 {
-    <p><img src="@Url.Content(f.Path)"></p>
+    <p class="name">@(f.Name)</p>
 }
+<script src="../wwwroot/js/signalr/dist/browser/signalr.min.js"></script>
+
+        
+
+
+
+<script type="text/javascript" charset="utf-8">
+    let audio = document.getElementById("audio");   
+    let time = document.querySelector(".time");     
+    let btnPlay = document.querySelector(".play");   
+    let btnPause = document.querySelector(".pause"); 
+    let btnPrev = document.querySelector(".prev");  
+    let btnNext = document.querySelector(".next");  
+    
+    
+    let playlist = [];
+    
+  
+    let count = @Model.Count();
+    
+    for (let i = 0; i < count; i++){
+        let song = document.getElementsByTagName('p')[i].textContent;
+        playlist.push(song);
+    }
+    
+    const hubConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/audio")
+                .build();
+     
+           hubConnection.on("Send", function (data) {
+     
+          
+                playlist.push(data);
+                count = playlist.length;
+            });
+     
+            document.getElementById("submit").addEventListener("click", function () {
+                let message = document.getElementById("submit").value.name;
+                hubConnection.invoke("Send", message);
+            });
+     
+            hubConnection.start();
+    
+    @*@foreach (var path in Model.Select(audio => audio.Path)) {
+            <text>
+            playlist.push(@Url.Content(path));
+            </text>
+        }*@
+    
+    console.log(playlist[0])
+    console.log(playlist[1])
+    
+    let treck;
+    
+    window.onload = function() {
+        treck = 0; // Присваиваем переменной ноль
+        audio.src = './Audios/' + playlist[0];
+    }
+    
+    function switchTreck (numTreck) {
+        audio.src = './Audios/' + playlist[numTreck];
+        audio.currentTime = 0;
+        audio.play();
+    }
+    
+    btnPlay.addEventListener("click", function() {
+        audio.play();
+        audioPlay = setInterval(function () {
+            let audioTime = Math.round(audio.currentTime);
+            let audioLength = Math.round(audio.duration)
+            time.style.width = (audioTime * 100) / audioLength + '%';
+            if (audioTime === audioLength && treck < playlist.length - 1) {
+                treck++;
+                switchTreck(treck);
+            } else if (audioTime === audioLength && treck >= playlist.length - 1) {
+                treck = 0;
+                switchTreck(treck);
+            }
+        }, 10);
+    });
+    
+    btnPause.addEventListener("click", function() {
+        audio.pause();
+        clearInterval(audioPlay)
+    });
+    
+    btnPrev.addEventListener("click", function() {
+        if (treck > 0) {
+            treck--
+            switchTreck(treck);
+        } else {
+            treck = playlist.length - 1;
+            switchTreck(treck);
+        }
+    });
+    
+    btnNext.addEventListener("click", function() {
+        if (treck < playlist.length - 1) {
+            treck++;
+            switchTreck(treck);
+        } else {
+            treck = 0;
+            switchTreck(treck);
+        }
+    });
+</script>

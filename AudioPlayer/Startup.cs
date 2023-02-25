@@ -1,9 +1,4 @@
-﻿using AudioPlayer.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace AudioPlayer;
+﻿namespace AudioPlayer;
 
 public class Startup
 {
@@ -18,6 +13,7 @@ public class Startup
     {
         services.AddMvc();
         services.AddControllersWithViews();
+        services.AddSignalR();
         //services.AddHttpClient<>();
     }
  
@@ -34,6 +30,7 @@ public class Startup
             endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+            endpoints.MapHub<AudioHub>("/audio");
         });
     }
 }
