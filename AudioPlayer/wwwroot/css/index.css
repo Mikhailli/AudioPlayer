@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css?family=Heebo:400,700|Open+Sans:400,700');
+
+h1 {
+    position: relative;
+    padding: 0;
+    margin: 0;
+    font-family: "Raleway", sans-serif;
+    font-weight: 300;
+    font-size: 40px;
+    color: #000000;
+    -webkit-transition: all 0.4s ease 0s;
+    -o-transition: all 0.4s ease 0s;
+    transition: all 0.4s ease 0s;
+    
+    
+  }
+
+:root {
+    --color: #3c3163;
+    --transition-time: 0.5s;
+}
+
+body {
+    font-family: 'Open Sans';
+    background: #fafafa;
+}
+
+a {
+    color: inherit;
+}
+
+audio {
+    width: 300px;
+    height: 25px;
+}
+
+audio::-webkit-media-controls-play-button {
+    -webkit-appearance: media-play-button;
+    display: none;
+}
+
+audio::-webkit-media-controls-panel {
+    background: #ADD8E6;
+}
+* {
+    margin: 0;
+    padding: 0;
+}
+button {
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    background-color: inherit;
+}
+.audioplayer {
+    border-radius: 10px;
+    height: 6%;
+    width: 20%;
+    background-color: #ADD8E6;
+}
+img {
+    width: 20px;
+    height: 20px;
+}
