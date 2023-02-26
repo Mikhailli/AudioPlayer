@@ -1,53 +1,38 @@
 ﻿@model IEnumerable<AudioPlayer.Models.Audio>
 @{
-    ViewData["Title"] = "Добавление файла";
+    Layout = "_Layout";
 }
-
 <style>
-.audio-track {
-    width: 150px;
-    height: 3px;
-    background-color: #dddddd;
-    margin: 20px 0
-}
 
-.time {
-    width: 0;
-    height: 3px;
-    background-color: #474747
-}
+
 </style>
-<h3>Выберите файл для загрузки</h3>
-<form asp-action="Create" asp-controller="Home" enctype="multipart/form-data">
-    <input type="file" accept="audio/*" name="uploadedFile" /><br>
+<!--suppress ALL -->
+<link rel="stylesheet" type="text/css" href="~/css/index.css">
+<h1>Выберите файл для загрузки</h1>
+<form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
+    <input id="audiofile" class="custom-file-input" type="file" accept="audio/*" name="uploadedFile" title=" "/><br>
     <input id="submit" type="submit" value="Загрузить" />
 </form>
-<audio id="audio"></audio>
-<div id="controls">
-    <div class="audio-track"><div class="time"></div></div>
-    <button class="play">Play</button>
-    <button class="pause">Pause</button>
-    <button class="prev">&#60;prev</button>
-    <button class="next">next&#62;</button>
+<div class="audioplayer">
+    <audio id="audio" controls></audio>
+    <div id="controls">
+        <button style="margin-left: 10px; margin-bottom: 5px;" class="play"><img src="~/play.png" alt="|>"/></button>
+        <button style="margin-bottom: 5px;" class="pause"><img src="~/pause.png" alt="||"/></button>
+        <button style="margin-right: 20px; margin-bottom: 5px; float: right" class="next"><img src="~/next_button.png" alt=">>"/></button>
+        <button style="margin-right: 12px; margin-bottom: 5px; float: right" class="prev"><img src="~/previous_button.png" alt="<<"/></button>
+    </div>
 </div>
- @*<Grid x:Name="LayoutRoot">
-     <MediaElement x:Name="media1" Source="Video.mp4" AutoPlay="False" />
-     <Button x:Name="playButton" Content="Play" Click="playButton_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="60" Height="25"/>
-     <Button x:Name="pauseButton" Content="Pause" Click="pauseButton_Click"  VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="60" Height="25"/>
-     <Button x:Name="stopButton" Content="Stop" Click="stopButton_Click"  VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="60" Height="25" />
- </Grid>*@
+ 
 <h3>Все файлы</h3>
 @foreach(var f in Model)
 {
     <p class="name">@(f.Name)</p>
 }
-<script src="../wwwroot/js/signalr/dist/browser/signalr.min.js"></script>
-
-        
-
 
 
 <script type="text/javascript" charset="utf-8">
+
+localStorage.setItem('squareNumber', '2')
     let audio = document.getElementById("audio");   
     let time = document.querySelector(".time");     
     let btnPlay = document.querySelector(".play");   
@@ -66,30 +51,6 @@
         playlist.push(song);
     }
     
-    const hubConnection = new signalR.HubConnectionBuilder()
-                .withUrl("/audio")
-                .build();
-     
-           hubConnection.on("Send", function (data) {
-     
-          
-                playlist.push(data);
-                count = playlist.length;
-            });
-     
-            document.getElementById("submit").addEventListener("click", function () {
-                let message = document.getElementById("submit").value.name;
-                hubConnection.invoke("Send", message);
-            });
-     
-            hubConnection.start();
-    
-    @*@foreach (var path in Model.Select(audio => audio.Path)) {
-            <text>
-            playlist.push(@Url.Content(path));
-            </text>
-        }*@
-    
     console.log(playlist[0])
     console.log(playlist[1])
     
@@ -97,11 +58,33 @@
     
     window.onload = function() {
         treck = 0; // Присваиваем переменной ноль
+        if (sessionStorage.getItem('audioTime') == null) {
         audio.src = './Audios/' + playlist[0];
+        }
+        else {
+           audio.src = sessionStorage.getItem('audioSrc');
+           audio.currentTime = sessionStorage.getItem('audioTime');
+           audio.play();
+                   audioPlay = setInterval(function () {
+                       let audioTime = sessionStorage.getItem('audioTime');
+                       sessionStorage.setItem('audioSrc', './Audios/' + playlist[treck]);
+                       sessionStorage.setItem('audioTime', audio.currentTime);
+                       let audioLength = Math.round(audio.duration)
+                       time.style.width = (audioTime * 100) / audioLength + '%';
+                       if (audioTime === audioLength && treck < playlist.length - 1) {
+                           treck++;
+                           switchTreck(treck);
+                       } else if (audioTime === audioLength && treck >= playlist.length - 1) {
+                           treck = 0;
+                           switchTreck(treck);
+                       }
+                   }, 10);
+        }
     }
     
     function switchTreck (numTreck) {
         audio.src = './Audios/' + playlist[numTreck];
+        //localStorage.setItem('audioSrc', './Audios/' + playlist[numTreck]);
         audio.currentTime = 0;
         audio.play();
     }
@@ -110,6 +93,8 @@
         audio.play();
         audioPlay = setInterval(function () {
             let audioTime = Math.round(audio.currentTime);
+            sessionStorage.setItem('audioSrc', './Audios/' + playlist[treck]);
+            sessionStorage.setItem('audioTime', audio.currentTime);
             let audioLength = Math.round(audio.duration)
             time.style.width = (audioTime * 100) / audioLength + '%';
             if (audioTime === audioLength && treck < playlist.length - 1) {
@@ -126,7 +111,6 @@
         audio.pause();
         clearInterval(audioPlay)
     });
-    
     btnPrev.addEventListener("click", function() {
         if (treck > 0) {
             treck--
