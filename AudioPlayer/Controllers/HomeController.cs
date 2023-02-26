@@ -27,21 +27,20 @@ public class HomeController : Controller
         return View(repo.GetAll().ToList());
     }
     
-    public void Create(IFormFile uploadedFile)
+    [HttpPost]
+    public async Task<IActionResult> Index(IFormFile uploadedFile)
     {
         if (uploadedFile != null)
         {
             var path = "/Audios/" + uploadedFile.FileName;
             var fullPath = _appEnvironment.WebRootPath + path;
-
+            SaveFile(uploadedFile, fullPath);
             using (var file = TagLib.File.Create(fullPath))
             {
                 if ((file.Properties.MediaTypes == MediaTypes.Audio) is false)
                 {
                     throw new ArgumentException($"{file.Name} не является аудиофайлом");
                 }
-                
-                SaveFile(uploadedFile, fullPath);
 
                 var audio = new Audio() { Name = uploadedFile.FileName, Path = path, Duration = (int)decimal.Ceiling(Convert.ToDecimal(file.Properties.Duration.TotalSeconds))};
                 _repository.Add(audio);
@@ -49,6 +48,7 @@ public class HomeController : Controller
             }
            
         }
+        return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
         
     }
 
