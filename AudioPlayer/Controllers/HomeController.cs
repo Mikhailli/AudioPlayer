@@ -1,6 +1,9 @@
-﻿#nullable enable
+﻿using AudioPlayer.Client.Services;
 using AudioPlayer.Data.Implementation;
+using AudioPlayer.Data.Services;
 using AudioPlayer.Models;
+using AudioPlayer.Models.ApiRequestModels;
+using AudioPlayer.Models.DataTable;
 using Microsoft.AspNetCore.Mvc;
 using TagLib;
 
@@ -8,23 +11,23 @@ namespace AudioPlayer.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ApplicationContext _db;
     IWebHostEnvironment _appEnvironment;
     private EFAudioRepository _repository;
+    private readonly AudiosService _audioServiceClient;
+    private readonly AudioService _audioServiceData;
     
-    public HomeController(IWebHostEnvironment appEnvironment)
+    public HomeController(IWebHostEnvironment appEnvironment, HttpClient httpClient)
     {
+        var context = new ApplicationContext();
+        _audioServiceClient = new AudiosService(httpClient);
         _appEnvironment = appEnvironment;
-        _db = new ApplicationContext();
-        _repository =  new EFAudioRepository(_db);
+        _repository =  new EFAudioRepository(context);
+        _audioServiceData = new AudioService(_repository);
     }    
     
     public IActionResult Index()
     {
-        var context = new ApplicationContext();
-        var repo = new EFAudioRepository(context);
-
-        return View(repo.GetAll().ToList());
+        return View(_audioServiceData.GetAll());
     }
     
     [HttpPost]
@@ -32,7 +35,7 @@ public class HomeController : Controller
     {
         if (uploadedFile != null)
         {
-            var path = "/Audios/" + uploadedFile.FileName;
+            var path = "/Audios/" + uploadedFile;
             var fullPath = _appEnvironment.WebRootPath + path;
             SaveFile(uploadedFile, fullPath);
             using (var file = TagLib.File.Create(fullPath))
@@ -51,12 +54,48 @@ public class HomeController : Controller
         return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
         
     }
-
-    private async void SaveFile(IFormFile uploadedFile, string fullPath)
+    
+    
+    [HttpPost]
+    [Route("[controller]/get")]
+    public async Task<DataTableResponse<AudioViewModel>> GetAudiosAsync(DataTableRequest dataTableRequest)
     {
-        await using (var fileStream = new FileStream(fullPath, FileMode.Create))
+        var (orderColumnName, isAscending) = dataTableRequest.GetOrderColumn();
+
+        var selectParameters = new AudiosSelectParameters(dataTableRequest.Start, dataTableRequest.Length,
+            dataTableRequest.Search.Value, orderColumnName ?? "Name", isAscending);
+
+        var selectedData = await _audioServiceClient.GetAudiosAsync(selectParameters);
+
+        var dataTableResponse = new DataTableResponse<AudioViewModel>(dataTableRequest.Draw,
+            selectedData.RecordsTotal, selectedData.RecordsFiltered, selectedData.Data);
+
+        return dataTableResponse;
+    }
+
+    public async Task<IActionResult> DeleteAudio(int audioId)
+    {
+        var audio = await _audioServiceClient.GetAudioAsync(audioId);
+
+        return PartialView("_DeleteAudioPartial", audio);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteAudio(AudioViewModel audioViewModel)
+    {
+        var audio = await _audioServiceClient.GetAudioAsync(audioViewModel.NumberInPlayList);
+
+        await _audioServiceClient.DeleteAudioAsync(audio);
+
+        return PartialView("_DeleteAudioPartial", audio);
+    }
+
+    private void SaveFile(IFormFile uploadedFile, string fullPath)
+    {
+        using (var fileStream = new FileStream(fullPath, FileMode.Create))
         {
-            await uploadedFile.CopyToAsync(fileStream);
+            uploadedFile.CopyTo(fileStream);
+            fileStream.Dispose();
         }
     }
 }
