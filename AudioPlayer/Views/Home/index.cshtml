@@ -1,4 +1,5 @@
-﻿@model IEnumerable<AudioPlayer.Models.Audio>
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<AudioPlayer.AudioViewModel>
 @{
     Layout = "_Layout";
 }
@@ -6,7 +7,8 @@
 
 
 </style>
-<!--suppress ALL -->
+
+<link rel="stylesheet" type="text/css" href="~/css/dataTable.css">
 <link rel="stylesheet" type="text/css" href="~/css/index.css">
 <h1>Выберите файл для загрузки</h1>
 <form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
@@ -26,13 +28,29 @@
 <h3>Все файлы</h3>
 @foreach(var f in Model)
 {
-    <p class="name">@(f.Name)</p>
+    <p style="display: none" class="name">@(f.NameWithExtension)</p>
 }
 
+<div class="features">
+    <table class="stripe row-border hover table-opacity-background display nowrap text-center" id="audio_table">
+        <thead>
+        <tr>
+            <th>№ в плейлисте</th>
+            <th>Название трека</th>
+            <th>Длительность</th>
+            <th></th>
+        </tr>
+        </thead>
+    </table>
+</div>
 
-<script type="text/javascript" charset="utf-8">
+<div id="modal-placeholder"></div>
 
-localStorage.setItem('squareNumber', '2')
+<script asp-src-include="js/datatables/jquery.js" type="text/javascript" charset="UTF-8"></script>
+<script asp-src-include="js/datatables/dataTable.js" type="text/javascript" charset="UTF-8"></script>
+<script asp-src-include="js/indexMenu.js" asp-append-version="true"></script>
+
+<script>
     let audio = document.getElementById("audio");   
     let time = document.querySelector(".time");     
     let btnPlay = document.querySelector(".play");   
@@ -130,4 +148,6 @@ localStorage.setItem('squareNumber', '2')
             switchTreck(treck);
         }
     });
+    
+    buildDataTable()
 </script>
