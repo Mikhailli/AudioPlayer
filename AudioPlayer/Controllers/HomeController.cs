@@ -1,4 +1,5 @@
-﻿using AudioPlayer.Client.Services;
+﻿using System.Net;
+using AudioPlayer.Client.Services;
 using AudioPlayer.Data.Implementation;
 using AudioPlayer.Data.Services;
 using AudioPlayer.Models;
@@ -31,11 +32,13 @@ public class HomeController : Controller
     }
     
     [HttpPost]
-    public async Task<IActionResult> Index(IFormFile uploadedFile)
+    public async Task<Audio> Index(IFormFile uploadedFile)
     {
+        var audio = new Audio();
         if (uploadedFile != null)
         {
-            var path = "/Audios/" + uploadedFile;
+            var path = "/Audios/" + uploadedFile.FileName;
+            
             var fullPath = _appEnvironment.WebRootPath + path;
             SaveFile(uploadedFile, fullPath);
             using (var file = TagLib.File.Create(fullPath))
@@ -45,14 +48,16 @@ public class HomeController : Controller
                     throw new ArgumentException($"{file.Name} не является аудиофайлом");
                 }
 
-                var audio = new Audio() { Name = uploadedFile.FileName, Path = path, Duration = (int)decimal.Ceiling(Convert.ToDecimal(file.Properties.Duration.TotalSeconds))};
+                audio = new Audio() { Name = uploadedFile.FileName, Path = path, Duration = (int)decimal.Ceiling(Convert.ToDecimal(file.Properties.Duration.TotalSeconds))};
                 _repository.Add(audio);
                 _repository.CommitChanges();
+                
+                //await _audioServiceClient.SaveAudioAsync(audio);
+                
             }
-           
+            
         }
-        return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
-        
+        return audio;
     }
     
     
@@ -71,6 +76,54 @@ public class HomeController : Controller
             selectedData.RecordsTotal, selectedData.RecordsFiltered, selectedData.Data);
 
         return dataTableResponse;
+    }
+    
+    [HttpPost]
+    public JsonResult AddAudio()
+    {
+        var uploadedFile = Request.Form.Files[0];
+        
+        if (uploadedFile != null)
+        {
+            var path = "/Audios/" + uploadedFile.FileName;
+            
+            var fullPath = _appEnvironment.WebRootPath + path;
+            SaveFile(uploadedFile, fullPath);
+            using (var file = TagLib.File.Create(fullPath))
+            {
+                if ((file.Properties.MediaTypes == MediaTypes.Audio) is false)
+                {
+                    throw new ArgumentException($"{file.Name} не является аудиофайлом");
+                }
+
+                var audio = new Audio() { Name = uploadedFile.FileName, Path = path, Duration = (int)decimal.Ceiling(Convert.ToDecimal(file.Properties.Duration.TotalSeconds))};
+                _repository.Add(audio);
+                _repository.CommitChanges();
+            }
+            
+        }
+        return Json("Аудио добавлено");
+    }
+
+    public async Task<IActionResult> UpdateAudio(int audioId)
+    {
+        var audio = await _audioServiceClient.GetAudioAsync(audioId);
+
+        return PartialView("_UpdateAudioPartial", audio);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateAudio(AudioViewModel audioViewModel)
+    {
+        var audio = await _audioServiceClient.GetAudioAsync(audioViewModel.NumberInPlayList);
+
+        //TODO проверка уникальности имени
+
+        audio.Name = audioViewModel.Name;
+
+        await _audioServiceClient.UpdateAudioAsync(audio);
+
+        return PartialView("_UpdateAudioPartial", audioViewModel);
     }
 
     public async Task<IActionResult> DeleteAudio(int audioId)
