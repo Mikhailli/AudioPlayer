@@ -44,6 +44,23 @@ public class AudioService
         return GetAll().First(audio => audio.NumberInPlayList == audioId);
     }
 
+    public void UpdateAudio(AudioViewModel audioViewModel)
+    {
+        /*if (_repository.GetCount(audio =>
+                audio.Id != audioViewModel.Id && ReturnsAudioNameWithoutExtension(audio.Name) == audioViewModel.Name) >
+            0)
+        {
+            throw new Exception($"Аудио с именем {audioViewModel.Name} уже существует.");
+        }*/
+
+        var audioToUpdate = _repository.GetById(audioViewModel.Id);
+        var audioNameExtension = ReturnsAudioNameExtension(audioToUpdate.Name);
+        audioToUpdate.Name = audioViewModel.Name + audioNameExtension;
+        
+        _repository.Update(audioToUpdate);
+        _repository.CommitChanges();
+    }
+
     public void DeleteAudio(AudioViewModel audio)
     {
         var audioToDelete = _repository.GetAll().First(entity => entity.Id == audio.Id);
@@ -51,7 +68,7 @@ public class AudioService
         _repository.CommitChanges();
     }
 
-    public string ReturnsAudioNameWithoutExtension(string audioName)
+    private string ReturnsAudioNameWithoutExtension(string audioName)
     {
         ArgumentNullException.ThrowIfNull(audioName);
         
@@ -59,6 +76,17 @@ public class AudioService
         {
             -1 => audioName,
             _ => audioName[..audioName.LastIndexOf('.')]
+        };
+    }
+    
+    private string ReturnsAudioNameExtension(string audioName)
+    {
+        ArgumentNullException.ThrowIfNull(audioName);
+        
+        return audioName.LastIndexOf('.') switch
+        {
+            -1 => audioName,
+            _ => audioName[audioName.LastIndexOf('.')..]
         };
     }
 
