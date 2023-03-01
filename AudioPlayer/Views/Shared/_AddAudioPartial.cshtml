@@ -1,0 +1,30 @@
+﻿@model AudioPlayer.Models.Audio
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<link rel="stylesheet" type="text/css" href="~/css/common.css">
+<div id="dlgConfirm" class="modal font-ktm" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить аудио?</h5>
+                <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="AddAudio">
+                    <input name="IsValid" type="hidden" value="@ViewData.ModelState.IsValid.ToString()"/>
+                    <input id="audiofile" class="custom-file-input" type="file" accept="audio/*" name="uploadedFile" title=" "/><br>
+                    <input id="submit" type="submit" value="Загрузить" />
+                    <div>
+                        Добавить @Model?
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-btn-confirm" type="button" class="btn btn-ktm pl-4 pr-4" data-save="modal">Да</button>
+                <button id="modal-btn-cancel" type="button" class="btn btn-light pl-4 pr-4" data-mdb-dismiss="modal">Нет</button>
+            </div>
+        </div>
+    </div>
+</div>
