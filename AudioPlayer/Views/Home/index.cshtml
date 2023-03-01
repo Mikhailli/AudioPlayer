@@ -11,10 +11,15 @@
 <link rel="stylesheet" type="text/css" href="~/css/dataTable.css">
 <link rel="stylesheet" type="text/css" href="~/css/index.css">
 <h1>Выберите файл для загрузки</h1>
-<form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
+@*<form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
     <input id="audiofile" class="custom-file-input" type="file" accept="audio/*" name="uploadedFile" title=" "/><br>
     <input id="submit" type="submit" value="Загрузить" />
-</form>
+</form>*@
+
+    <input id="uploadFile" class="custom-file-input" type="file" accept="audio/*" name="uploadedFile" title=" "/><br>
+    <input id="submit" type="submit" value="Загрузить" />
+
+<button></button>
 <div class="audioplayer">
     <audio id="audio" controls></audio>
     <div id="controls">
@@ -28,7 +33,7 @@
 <h3>Все файлы</h3>
 @foreach(var f in Model)
 {
-    <p style="display: none" class="name">@(f.NameWithExtension)</p>
+    <p style="display: none" class="name">@(f.Path)</p>
 }
 
 <div class="features">
@@ -36,7 +41,7 @@
         <thead>
         <tr>
             <th>№ в плейлисте</th>
-            <th>Название трека</th>
+            <th data-name>Название трека</th>
             <th>Длительность</th>
             <th></th>
         </tr>
@@ -77,7 +82,7 @@
     window.onload = function() {
         treck = 0; // Присваиваем переменной ноль
         if (sessionStorage.getItem('audioTime') == null) {
-        audio.src = './Audios/' + playlist[0];
+        audio.src = '.' + playlist[0];
         }
         else {
            audio.src = sessionStorage.getItem('audioSrc');
@@ -85,14 +90,14 @@
            audio.play();
                    audioPlay = setInterval(function () {
                        let audioTime = sessionStorage.getItem('audioTime');
-                       sessionStorage.setItem('audioSrc', './Audios/' + playlist[treck]);
+                       sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
                        sessionStorage.setItem('audioTime', audio.currentTime);
                        let audioLength = Math.round(audio.duration)
                        time.style.width = (audioTime * 100) / audioLength + '%';
-                       if (audioTime === audioLength && treck < playlist.length - 1) {
+                       if (audioTime == audioLength && treck < playlist.length - 1) {
                            treck++;
                            switchTreck(treck);
-                       } else if (audioTime === audioLength && treck >= playlist.length - 1) {
+                       } else if (audioTime == audioLength && treck >= playlist.length - 1) {
                            treck = 0;
                            switchTreck(treck);
                        }
@@ -100,25 +105,17 @@
         }
     }
     
-    function switchTreck (numTreck) {
-        audio.src = './Audios/' + playlist[numTreck];
-        //localStorage.setItem('audioSrc', './Audios/' + playlist[numTreck]);
-        audio.currentTime = 0;
-        audio.play();
-    }
-    
     btnPlay.addEventListener("click", function() {
         audio.play();
         audioPlay = setInterval(function () {
             let audioTime = Math.round(audio.currentTime);
-            sessionStorage.setItem('audioSrc', './Audios/' + playlist[treck]);
+            sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
             sessionStorage.setItem('audioTime', audio.currentTime);
             let audioLength = Math.round(audio.duration)
-            time.style.width = (audioTime * 100) / audioLength + '%';
-            if (audioTime === audioLength && treck < playlist.length - 1) {
+            if (audioTime == audioLength && treck < playlist.length - 1) {
                 treck++;
                 switchTreck(treck);
-            } else if (audioTime === audioLength && treck >= playlist.length - 1) {
+            } else if (audioTime == audioLength && treck >= playlist.length - 1) {
                 treck = 0;
                 switchTreck(treck);
             }
@@ -149,5 +146,211 @@
         }
     });
     
-    buildDataTable()
+    
+    
+    table = $('#audio_table').DataTable(
+            {
+                'info': false,
+                'lengthMenu': [4, 8, 16],
+                'rowReorder': true,
+                'order': [],
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "ajax": {
+                    "url": `/Home/get`,
+                    "type": "POST"
+                },
+                'columnDefs': [
+                    { orderable: false, targets: '_all' }
+                ],
+                'createdRow': function (row, data, dataIndex) {
+                  $(row).attr('data-number', data.numberInPlayList);  
+                },
+                "columns": [
+                    {
+                        data: null,
+                        name: 'NumberInPlayList',
+                        render: function(data)
+                        {
+                            return data.numberInPlayList;
+                        }
+                    },
+                    {
+                        data: null,
+                        name: 'Name',
+                        render: function(data)
+                        {
+                            return data.name;
+                        }
+                    },
+                    {
+                        data: null,
+                        name: 'Duration',
+                        render: function(data)
+                        {
+                            return data.duration;
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            if (data.numberInPlayList - 1 == treck) {
+                                return '';
+                            }
+                            return '<button class="btn btn-sm btn-primary mr-1" data-update-btn data-url="/Home/UpdateAudio?audioId=' + data.numberInPlayList + '" ><span class="fas fa-pencil-alt"></span> Изменить</button>' +
+                            '<button class="btn btn-sm btn-danger my-1" data-delete-btn data-url="/Home/DeleteAudio?audioId=' + data.numberInPlayList + '"><span class="fas fa-times"></span> Удалить</button>';
+                        },
+                        width: 'auto'
+                    }
+                ],
+                'language':
+                    {
+                        'search': 'Поиск',
+                        'lengthMenu': 'Показать _MENU_ элементов',
+                        'zeroRecords': 'Совпадений не найдено',
+                        'processing': 'Данные загружаются...',
+                        'paginate':
+                            {
+                                'previous': '<',
+                                'next': '>'
+                            }
+                    },
+                searchPanes: {
+                    viewTotal: true
+                }
+            }).page('first').draw('page');
+            
+    function switchTreck (numTreck) {
+            audio.src = '.' + playlist[numTreck];
+            table.draw(false);
+            //localStorage.setItem('audioSrc', './Audios/' + playlist[numTreck]);
+            audio.currentTime = 0;
+            audio.play();
+        }
+    
+    $('#submit').on('click', function (e) {
+                e.preventDefault();
+                var files = document.getElementById('uploadFile').files;
+                if (files.length > 0) {
+                    if (window.FormData !== undefined) {
+                        var data = new FormData();
+                        data.append("file" + 0, files[0]);
+                        
+         
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("AddAudio", "Home")',
+                            contentType: false,
+                            processData: false,
+                            data: data,
+                            success: function (result) {
+                                playlist.push('/Audios/' + files.item(0).name);
+                                alert(result);
+                                table.draw(false);
+                            },
+                            error: function (xhr, status, p3) {
+                                alert(xhr.responseText);
+                            }
+                        });
+                        
+                    } else {
+                        alert("Браузер не поддерживает загрузку файлов HTML5!");
+                    }
+                }
+            });
+            
+            var placeholderElement = $('#modal-placeholder');
+            
+            placeholderElement.on('hide.bs.modal', '.modal', function () {
+                placeholderElement.off('click', '[data-dismiss="modal"]');
+            });
+            
+            table.on('click', 'button[data-delete-btn]', function () {
+                var request = $(this).data('url');
+                $.get(request).done(function (data) {
+                    placeholderElement.html(data);
+                    console.log(data);
+                    placeholderElement.find('.modal').modal('show');
+                });
+                
+                placeholderElement.on('click',
+                    '[data-save="modal"]',
+                    function (event) {
+                    event.preventDefault();
+                    
+                    var form = $(this).parents('.modal').find('form');
+                    var actionUrl = form.attr('action');
+                    var dataToSend = form.serialize();
+                    
+                    $.post(actionUrl, dataToSend).done(function (data) {
+                        var newBody = $('.modal-body', data);
+                        placeholderElement.find('.modal-body').replaceWith(newBody);
+                        var numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
+                       
+                        playlist.splice(numberInPlaylist - 1, 1);
+                        if (treck > numberInPlaylist - 1) {
+                            treck--;
+                        }
+                            try {
+                                table.draw(false);
+                                
+                            } finally {
+                                placeholderElement.off('click', '[data-save="modal"]');
+                            }
+                        placeholderElement.find('.modal').modal('hide');
+                    });
+                    
+                });
+    
+                placeholderElement.on('click',
+                    '[data-mdb-dismiss="modal"]',
+                    function (event) {
+                        event.preventDefault();
+                        placeholderElement.find('.modal').modal('hide');
+                    });
+            });
+            
+            table.on('click', 'button[data-update-btn]', function () {
+                var requestUrl = $(this).data('url');
+                $.get(requestUrl).done(function (data) {
+                    placeholderElement.html(data);
+                    placeholderElement.find('.modal').modal('show');
+                });
+                
+                placeholderElement.on('click',
+                    '[data-save="modal"]',
+                    function (event) {
+                    event.preventDefault();
+                    
+                    var form = $(this).parents('.modal').find('form');
+                    var actionUrl = form.attr('action');
+                    var dataToSend = form.serialize();
+                    
+                    $.post(actionUrl, dataToSend).done(function (data) {
+                        var newBody = $('.modal-body', data);
+                        placeholderElement.find('.modal-body').replaceWith(newBody);
+                        
+                        try {
+                            var numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
+                            var audioName = newBody.find('[name="Name"]').val();
+                            var rowToUpdate = $('table#audio_table').find('tr[data-number="' + numberInPlaylist + '"]')
+                            if (rowToUpdate) {
+                                rowToUpdate.find('th[data-name]').text(audioName);
+                            }
+                            table.draw(false);
+                        } finally {
+                            placeholderElement.off('click', '[data-save="modal"]');
+                            placeholderElement.find('.modal').modal('hide');
+                        }
+                    });
+                });
+    
+                placeholderElement.on('click',
+                    '[data-mdb-dismiss="modal"]',
+                    function (event) {
+                        event.preventDefault();
+                        placeholderElement.find('.modal').modal('hide');
+                    });
+            });
 </script>
