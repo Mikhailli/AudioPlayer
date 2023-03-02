@@ -44,8 +44,26 @@ public class HomeController : Controller
         return Json(audio);
     }
 
+    [HttpPut]
+    [Route("{audioId:int}")]
+    public IActionResult UpdateAudio(int audioId, AudioViewModel audioViewModel)
+    {
+        var audio = _audiosService.GetAudioById(audioId);
+
+        if (audio is null)
+        {
+            return NotFound();
+        }
+
+        audio.Name = audioViewModel.Name;
+        
+        _audiosService.UpdateAudio(audio);
+
+        return Ok();
+    }
+
     [HttpDelete]
-    [Route("{audioId}")]
+    [Route("{audioId:int}")]
     public IActionResult DeleteAudioData(int audioId)
     {
         var audio = _audiosService.GetAudioById(audioId);
