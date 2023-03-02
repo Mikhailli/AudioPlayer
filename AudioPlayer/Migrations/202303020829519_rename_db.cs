@@ -3,7 +3,7 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class fix_audio : DbMigration
+    public partial class rename_db : DbMigration
     {
         public override void Up()
         {
@@ -12,8 +12,8 @@
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        Name = c.String(nullable: false),
-                        Path = c.String(nullable: false),
+                        Name = c.String(),
+                        Path = c.String(),
                         Duration = c.Int(nullable: false),
                         PreviousAudio_Id = c.Int(),
                         NextAudio_Id = c.Int(),

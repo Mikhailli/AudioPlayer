@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AudioPlayerLibrary\AudioPlayerLibrary.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\js\indexMenu.js" />
     <_ContentIncludedByDefault Remove="wwwroot\js\numberEndHelper.js" />
     <_ContentIncludedByDefault Remove="wwwroot\js\popper.min.js" />

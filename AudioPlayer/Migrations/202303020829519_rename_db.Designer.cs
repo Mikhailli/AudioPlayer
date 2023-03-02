@@ -7,13 +7,13 @@ namespace AudioPlayer.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class fix_audio : IMigrationMetadata
+    public sealed partial class rename_db : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(fix_audio));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(rename_db));
         
         string IMigrationMetadata.Id
         {
-            get { return "202302231225062_fix_audio"; }
+            get { return "202303020829519_rename_db"; }
         }
         
         string IMigrationMetadata.Source
