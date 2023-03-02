@@ -1,20 +1,419 @@
-﻿@model IEnumerable<AudioPlayer.Models.Audio>
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<AudioPlayer.AudioViewModel>
 @{
-    ViewData["Title"] = "Добавление файла";
+    Layout = "_Layout";
 }
-<h3>Выберите файл для загрузки</h3>
-<form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
-    <input type="file" accept="audio/*" name="uploadedFile" /><br>
-    <input type="submit" value="Загрузить" />
-</form>
- @*<Grid x:Name="LayoutRoot">
-     <MediaElement x:Name="media1" Source="Video.mp4" AutoPlay="False" />
-     <Button x:Name="playButton" Content="Play" Click="playButton_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="60" Height="25"/>
-     <Button x:Name="pauseButton" Content="Pause" Click="pauseButton_Click"  VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="60" Height="25"/>
-     <Button x:Name="stopButton" Content="Stop" Click="stopButton_Click"  VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="60" Height="25" />
- </Grid>*@
-<h3>Все файлы</h3>
+
+<link rel="stylesheet" type="text/css" href="~/css/dataTable.css">
+<link rel="stylesheet" type="text/css" href="~/css/index.css">
+
 @foreach(var f in Model)
 {
-    <p><img src="@Url.Content(f.Path)"></p>
+    <p style="display: none" class="name">@(f.Path)</p>
 }
+
+<div style="margin-top: 5px; display: inline-block; width: 100%; box-sizing: border-box">
+    <div style="float: left; clear: right;">
+        <div class="audioplayer" style="min-width: 300px; margin-left: 10px; width: 20%;">
+            <audio id="audio" controls></audio>
+            <div id="controls">
+                <button style="margin-left: 10px; margin-bottom: 5px;" class="play"><img src="~/play.png" alt="|>"/></button>
+                <button style="margin-bottom: 5px;" class="pause"><img src="~/pause.png" alt="||"/></button>
+                <button style="margin-right: 20px; margin-bottom: 5px; float: right" class="next"><img src="~/next_button.png" alt=">>"/></button>
+                <button style="margin-right: 12px; margin-bottom: 5px; float: right" class="prev"><img src="~/previous_button.png" alt="<<"/></button>
+            </div>
+        </div>
+        <div style="min-width: 300px; margin-left: 10px; width: 400px; float: left; clear: right;">
+            <h4>Выберите файл для загрузки</h4>
+            <div style="margin-top: 5px; margin-bottom: 5px;">
+                <input style="display:none;" id="uploadFile" type="file" accept="audio/*" name="uploadedFile" title=" "/>
+                <button style="width: 200px;" id="bntUpload" class="btn btn-sm btn-primary mr-1">Выбрать файл</button>
+            </div>
+            <div style="margin-top: 5px; margin-bottom: 5px;">
+                <input style="width: 200px;" id="submit" class="btn btn-sm btn-primary mr-1" type="submit" value="Загрузить">
+            </div>
+            <div>
+                 <span id="selected_filename"></span>
+            </div>
+        </div>
+    </div>
+    <div class="features" style="margin-right: 10px; width: 70%; float: right; max-width: 100%;">
+        <table class="stripe row-border hover table-opacity-background display nowrap text-center" id="audio_table">
+            <thead>
+            <tr>
+                <th>№ в плейлисте</th>
+                <th data-name>Название трека</th>
+                <th>Длительность</th>
+                <th></th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div id="modal-placeholder"></div>
+
+<script asp-src-include="js/datatables/jquery.js" type="text/javascript" charset="UTF-8"></script>
+<script asp-src-include="js/datatables/dataTable.js" type="text/javascript" charset="UTF-8"></script>
+<script asp-src-include="js/indexMenu.js" asp-append-version="true"></script>
+<script src="https://kit.fontawesome.com/c72087de1f.js" crossorigin="anonymous"></script>
+
+<script>
+    let audio = document.getElementById("audio");      
+    let btnPlay = document.querySelector(".play");   
+    let btnPause = document.querySelector(".pause"); 
+    let btnPrev = document.querySelector(".prev");  
+    let btnNext = document.querySelector(".next");  
+    
+    let playlist = [];
+    let isAudioPlay;
+ 
+    let count = @Model.Count();
+    
+    for (let i = 0; i < count; i++){
+        let song = document.getElementsByTagName('p')[i].textContent;
+        playlist.push(song);
+    }
+    
+    let track;
+
+    $(document).ready( function() {
+        $('#bntUpload').click(function(){
+            $("#uploadFile").click();
+        });
+         
+        $('#uploadFile').change(function() {
+            let files = document.getElementById('uploadFile').files;
+            $('#selected_filename').text('\n' + files.item(0).name);
+        });
+    });
+    
+    table = $('#audio_table').DataTable(
+        {
+            'info': false,
+            'lengthMenu': [10, 25, 50, 100],
+            'rowReorder': true,
+            'order': [],
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": `/Home/get`,
+                "type": "POST"
+            },
+            'columnDefs': [
+                { orderable: false, targets: '_all' }
+            ],
+            'createdRow': function (row, data) {
+                $(row).attr('data-number', data.numberInPlayList);  
+            },
+            "columns": [
+                {
+                    data: null,
+                    name: 'NumberInPlayList',
+                    render: function(data)
+                    {
+                        return '<td class="withBorder">' + data.numberInPlayList + '</td>';
+                    }
+                },
+                {
+                    data: null,
+                    name: 'Name',
+                    render: function(data)
+                    {
+                        return data.name;
+                    }
+                },
+                {
+                    data: null,
+                    name: 'Duration',
+                    render: function(data)
+                    {
+                        if (data.numberInPlayList - 1 == track && isAudioPlay) {
+                            return '<button class="play" data-pause-btn data-url=' + data.numberInPlayList + '><span style="margin-right: 5px;" class="fa-solid fa-stop"></button>' + data.duration;
+                        }
+                        return '<button class="play" data-play-btn data-url=' + data.numberInPlayList + '><span style="margin-right: 5px;" class="fa-solid fa-play"></button>' + data.duration;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        if (data.numberInPlayList - 1 == track && isAudioPlay) {
+                            return '<button class="btn btn-sm btn-primary mr-1" data-update-btn data-url="/Home/UpdateAudio?audioId=' + data.numberInPlayList + '" ><span style="margin-right: 5px;" class="fas fa-pencil-alt"></span> Изменить</button>';
+                        }
+                        return '<button class="btn btn-sm btn-primary mr-1" data-update-btn data-url="/Home/UpdateAudio?audioId=' + data.numberInPlayList + '" ><span style="margin-right: 5px;" class="fas fa-pencil-alt"></span> Изменить</button>' +
+                            '<button style="margin-left: 10px" class="btn btn-sm btn-danger my-1" data-delete-btn data-url="/Home/DeleteAudio?audioId=' + data.numberInPlayList + '"><span style="margin-right: 5px;" class="fas fa-times">  </span> Удалить</button>';
+                    },
+                    width: 'auto'
+                }
+            ],
+            "style_data_conditional": [
+                    {
+                        'borderRight': '5px solid red',
+                        'borderLeft': '5px solid red',
+                    },
+                ],
+            'language':
+            {
+                'search': 'Поиск',
+                'lengthMenu': 'Показать _MENU_ элементов',
+                'zeroRecords': 'Совпадений не найдено',
+                'processing': 'Данные загружаются...',
+                'paginate':
+                {
+                    'previous': '<',
+                    'next': '>'
+                }
+            },
+            searchPanes: {
+                viewTotal: true
+            }
+        }
+    ).page('first').draw('page');
+    
+    window.onload = function() {
+        isAudioPlay = false;
+        if (sessionStorage.getItem('track') == null) {
+            track = 0;
+        }
+        else {
+            track = sessionStorage.getItem('track');
+        }
+    
+        if (sessionStorage.getItem('audioTime') == null) {
+            audio.src = '.' + playlist[0];
+        } 
+        else {
+            audio.src = sessionStorage.getItem('audioSrc');
+            audio.currentTime = sessionStorage.getItem('audioTime');
+            audio.play();
+            audioPlay = setInterval(function () {
+                let audioTime = sessionStorage.getItem('audioTime');
+                sessionStorage.setItem('audioSrc', '.' + playlist[track]);
+                sessionStorage.setItem('audioTime', audio.currentTime);
+                let audioLength = Math.round(audio.duration);
+                if (audioTime == audioLength.toString() && track < playlist.length - 1) {
+                    track++;
+                    switchTrack(track);
+                } 
+                else if (audioTime == audioLength.toString()) {
+                    track = 0;
+                    switchTrack(track);
+                }
+            }, 10);
+        }
+            
+        table.draw(false);
+    }
+    
+    btnPlay.addEventListener("click", function() {
+        audio.play();
+        isAudioPlay = true;
+        table.draw(false);
+        sessionStorage.setItem('isAudioPlay', 'true');
+        audioPlay = setInterval(function () {
+            let audioTime = Math.round(audio.currentTime);
+            sessionStorage.setItem('audioSrc', '.' + playlist[track]);
+            sessionStorage.setItem('audioTime', audio.currentTime);
+            let audioLength = Math.round(audio.duration)
+            if (audioTime === audioLength && track < playlist.length - 1) {
+                track++;
+                switchTrack(track);
+            } 
+            else if (audioTime === audioLength && track >= playlist.length - 1) {
+                track = 0;
+                switchTrack(track);
+            }
+        }, 10);
+    });
+        
+    btnPause.addEventListener("click", function() {
+        audio.pause();
+        isAudioPlay = false;
+        sessionStorage.setItem('isAudioPlay', 'false');
+        table.draw(false);
+        clearInterval(audioPlay);
+    });
+    
+    btnPrev.addEventListener("click", function() {
+        if (track > 0) {
+            track--;
+            switchTrack(track);
+        } 
+        else {
+            track = playlist.length - 1;
+            switchTrack(track);
+        }
+    });
+        
+    btnNext.addEventListener("click", function() {
+        if (track < playlist.length - 1) {
+            track++;
+            switchTrack(track);
+        }
+        else {
+            track = 0;
+            switchTrack(track);
+        }
+    });
+    
+    function switchTrack (numTrack) {
+        track = numTrack;
+        sessionStorage.setItem('track', numTrack);
+        audio.src = '.' + playlist[numTrack];
+        isAudioPlay = true;
+        sessionStorage.setItem('isAudioPlay', 'true');
+        localStorage.setItem('audioSrc', '.' + playlist[numTrack]);
+        audio.currentTime = 0;
+        audio.play();
+        table.draw(false);
+    }
+    
+    $('#submit').on('click', function (e) {
+        e.preventDefault();
+        let files = document.getElementById('uploadFile').files;
+        if (files.length > 0) {
+            if (window.FormData !== undefined) {
+                let data = new FormData();
+                data.append("file" + 0, files[0]);
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("AddAudio", "Home")',
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    success: function (result) {
+                        playlist.push('/Audios/' + files.item(0).name);
+                        table.draw(false);
+                        $('#selected_filename').text('');
+                        document.getElementById('uploadFile').value = '';
+                        },
+                        error: function (xhr) {
+                            alert(xhr.responseText);
+                        }
+                    }
+                );
+            
+            } 
+            else {
+                alert("Браузер не поддерживает загрузку файлов HTML5!");
+            }
+        }
+    });
+            
+    let placeholderElement = $('#modal-placeholder');
+            
+    placeholderElement.on('hide.bs.modal', '.modal', function () {
+        placeholderElement.off('click', '[data-dismiss="modal"]');
+    });
+            
+    table.on('click', 'button[data-delete-btn]', function () {
+        let request = $(this).data('url');
+        $.get(request).done(function (data) {
+            placeholderElement.html(data);
+            placeholderElement.find('.modal').modal('show');
+        });
+                
+        placeholderElement.on('click', '[data-save="modal"]', function (event) {
+            event.preventDefault();
+                    
+            let form = $(this).parents('.modal').find('form');
+            let actionUrl = form.attr('action');
+            let dataToSend = form.serialize();
+                    
+            $.post(actionUrl, dataToSend).done(function (data) {
+                let newBody = $('.modal-body', data);
+                placeholderElement.find('.modal-body').replaceWith(newBody);
+                let numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
+                       
+                playlist.splice(numberInPlaylist - 1, 1);
+                if (track.toString() === (numberInPlaylist - 1).toString()) {
+                    if (track.toString() === playlist.length.toString()) {
+                        track--;
+                        switchTrack(track);
+                    }
+                    else {
+                        switchTrack(track);
+                    }
+                    
+                    isAudioPlay = false;
+                    audio.pause();
+                    sessionStorage.setItem('audioSrc', '.' + playlist[track]);
+                    sessionStorage.setItem('audioTime', audio.currentTime);
+                    sessionStorage.setItem('isAudioPlay', 'false');
+                                                    
+                }
+                if (track > numberInPlaylist - 1) {
+                    track--;
+                }
+                        
+                try {
+                    table.draw(false);
+                } 
+                finally {
+                    placeholderElement.off('click', '[data-save="modal"]');
+                }
+                placeholderElement.find('.modal').modal('hide');
+            });
+                    
+        });
+    
+        placeholderElement.on('click', '[data-mdb-dismiss="modal"]', function (event) {
+            event.preventDefault();
+            placeholderElement.find('.modal').modal('hide');
+        });
+    });
+            
+    table.on('click', 'button[data-update-btn]', function () {
+        let requestUrl = $(this).data('url');
+        $.get(requestUrl).done(function (data) {
+            placeholderElement.html(data);
+            placeholderElement.find('.modal').modal('show');
+        });
+                
+        placeholderElement.on('click', '[data-save="modal"]', function (event) {
+            event.preventDefault();
+                    
+            let form = $(this).parents('.modal').find('form');
+            let actionUrl = form.attr('action');
+            let dataToSend = form.serialize();
+                    
+            $.post(actionUrl, dataToSend).done(function (data) {
+                let newBody = $('.modal-body', data);
+                placeholderElement.find('.modal-body').replaceWith(newBody);
+                        
+                try {
+                    let numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
+                    let audioName = newBody.find('[name="Name"]').val();
+                    let rowToUpdate = $('table#audio_table').find('tr[data-number="' + numberInPlaylist + '"]')
+                    if (rowToUpdate) {
+                        rowToUpdate.find('th[data-name]').text(audioName);
+                    }
+                    table.draw(false);
+                } 
+                finally {
+                    placeholderElement.off('click', '[data-save="modal"]');
+                    placeholderElement.find('.modal').modal('hide');
+                }
+            });
+        });
+    
+        placeholderElement.on('click', '[data-mdb-dismiss="modal"]', function (event) {
+            event.preventDefault();
+            placeholderElement.find('.modal').modal('hide');
+        });
+    });
+    
+    table.on('click', 'button[data-play-btn]', function () {
+        let numberInPlayList = $(this).data('url');
+        switchTrack(numberInPlayList - 1);
+    });
+    
+    table.on('click', 'button[data-pause-btn]', function () {
+        audio.pause();
+        isAudioPlay = false;
+        sessionStorage.setItem('isAudioPlay', 'false');
+        table.draw(false);
+        clearInterval(audioPlay);
+    });
+</script>

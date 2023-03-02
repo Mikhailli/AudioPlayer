@@ -1,10 +1,15 @@
 ﻿#nullable enable
 using System.Data.Entity;
+using System.Linq.Expressions;
+using AudioPlayer.Data.Domain.SelectionModels;
 using AudioPlayer.Data.Interfaces;
 using AudioPlayer.Models;
+using System.Linq.Dynamic.Core;
+using LinqKit;
 
 namespace AudioPlayer.Data.Implementation;
 
+// ReSharper disable once InconsistentNaming
 public class EFAudioRepository : EFGenericRepository<Audio>
 {
     public EFAudioRepository(ApplicationContext context) : base(context)
@@ -54,4 +59,36 @@ public class EFAudioRepository : EFGenericRepository<Audio>
 
         _dbSet.Remove(audio);
     }
+    
+    public int GetCount(AudiosSelectParameters parameters)
+    {
+        var filterExpression = BuildAudiosExpression(parameters);
+
+        return GetCount(filterExpression);
+    }
+    
+    public override IEnumerable<Audio> GetAll()
+    {
+        return GetQueryable().AsEnumerable().OrderBy(audio => audio.Id);
+    }
+    
+    public List<Audio> GetAll(AudiosSelectParameters parameters)
+    {
+        var filterExpression = BuildAudiosExpression(parameters);
+
+        return GetQueryable(filterExpression,
+            orderBy: q => q.OrderBy("Id asc"),
+            skip: parameters.Start,
+            take: parameters.Length).ToList();
+    }
+    
+    private Expression<Func<Audio, bool>> BuildAudiosExpression(AudiosSelectParameters parameters)
+    {
+        var searchPattern = parameters.SearchPattern != "*" ? parameters.SearchPattern : "";
+
+        return PredicateBuilder.New<Audio>(audio =>
+            audio.Name.Contains(searchPattern));
+    }
+    
+    
 }

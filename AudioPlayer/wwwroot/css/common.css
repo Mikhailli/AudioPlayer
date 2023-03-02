@@ -1,0 +1,27 @@
+﻿html {
+    overflow-x: hidden;
+}
+
+.btn-ktm {
+    color: white;
+    background-color: #f38e30;
+    border-color: #f38e30;
+}
+
+.btn-ktm:hover {
+    color: white;
+    background-color: #f17c0e;
+    border-color: #f17c0e;
+}
+
+.btn-ktm:focus {
+    box-shadow: 0 0 0 0.2rem rgba(243, 142, 48, 0.25) !important;
+}
+
+.btn-ktm:active {
+    box-shadow: 0 0 0 0.2rem rgba(243, 142, 48, 0.25) !important;
+}
+
+.pl-4 {
+    padding-left: 1.5rem !important;
+}

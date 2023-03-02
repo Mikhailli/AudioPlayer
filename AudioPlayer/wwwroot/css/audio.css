@@ -1,0 +1,33 @@
+audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-button {
+    -webkit-appearance: media-mute-button;
+    display: none;
+    flex: none;
+    border: none;
+    box-sizing: border-box;
+    width: 35px;
+    height: 30px;
+    line-height: 30px;
+    margin: 0 6px 0 0;
+    padding: 0;
+    background-color: initial;
+    color: inherit;
+}
+audio::-webkit-media-controls-overlay-enclosure {
+    display: none;
+}
+
+audio::-webkit-media-controls-play-button {
+    -webkit-appearance: media-play-button;
+    display: none;
+    flex: none;
+    border: none;
+    box-sizing: border-box;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    margin-left: 9px;
+    margin-right: 9px;
+    padding: 0;
+    background-color: initial;
+    color: inherit;
+}

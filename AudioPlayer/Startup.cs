@@ -1,7 +1,4 @@
-﻿using AudioPlayer.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using AudioPlayer.Client.Services;
 
 namespace AudioPlayer;
 
@@ -17,8 +14,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddMvc();
-        services.AddControllersWithViews();
-        //services.AddHttpClient<>();
+        services.AddControllersWithViews().AddNewtonsoftJson(options =>
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+        );
+        services.AddHttpClient<AudiosService>();
     }
  
     public void Configure(IApplicationBuilder app)
