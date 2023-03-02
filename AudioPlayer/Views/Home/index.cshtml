@@ -65,8 +65,8 @@
     
     
     let playlist = [];
-    
-  
+    let isAudioPlay;
+ 
     let count = @Model.Count();
     
     for (let i = 0; i < count; i++){
@@ -74,13 +74,22 @@
         playlist.push(song);
     }
     
-    console.log(playlist[0])
-    console.log(playlist[1])
-    
     let treck;
     
     window.onload = function() {
-        treck = 0; // Присваиваем переменной ноль
+        if (sessionStorage.getItem('isAudioPlay') == null) {
+            isAudioPlay = false;
+        }
+        else {
+            isAudioPlay = sessionStorage.getItem('isAudioPlay');
+        }
+        if (sessionStorage.getItem('treck') == null) {
+                    treck = 0;
+                    }
+            else {
+                treck = sessionStorage.getItem('treck');
+            }
+       
         if (sessionStorage.getItem('audioTime') == null) {
         audio.src = '.' + playlist[0];
         }
@@ -96,55 +105,18 @@
                        time.style.width = (audioTime * 100) / audioLength + '%';
                        if (audioTime == audioLength && treck < playlist.length - 1) {
                            treck++;
+                          
                            switchTreck(treck);
                        } else if (audioTime == audioLength && treck >= playlist.length - 1) {
                            treck = 0;
+                           
                            switchTreck(treck);
                        }
                    }, 10);
         }
     }
     
-    btnPlay.addEventListener("click", function() {
-        audio.play();
-        audioPlay = setInterval(function () {
-            let audioTime = Math.round(audio.currentTime);
-            sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
-            sessionStorage.setItem('audioTime', audio.currentTime);
-            let audioLength = Math.round(audio.duration)
-            if (audioTime == audioLength && treck < playlist.length - 1) {
-                treck++;
-                switchTreck(treck);
-            } else if (audioTime == audioLength && treck >= playlist.length - 1) {
-                treck = 0;
-                switchTreck(treck);
-            }
-        }, 10);
-    });
     
-    btnPause.addEventListener("click", function() {
-        audio.pause();
-        clearInterval(audioPlay)
-    });
-    btnPrev.addEventListener("click", function() {
-        if (treck > 0) {
-            treck--
-            switchTreck(treck);
-        } else {
-            treck = playlist.length - 1;
-            switchTreck(treck);
-        }
-    });
-    
-    btnNext.addEventListener("click", function() {
-        if (treck < playlist.length - 1) {
-            treck++;
-            switchTreck(treck);
-        } else {
-            treck = 0;
-            switchTreck(treck);
-        }
-    });
     
     
     
@@ -195,7 +167,7 @@
                     {
                         data: null,
                         render: function (data, type, row) {
-                            if (data.numberInPlayList - 1 == treck) {
+                            if (data.numberInPlayList - 1 == treck && isAudioPlay) {
                                 return '';
                             }
                             return '<button class="btn btn-sm btn-primary mr-1" data-update-btn data-url="/Home/UpdateAudio?audioId=' + data.numberInPlayList + '" ><span class="fas fa-pencil-alt"></span> Изменить</button>' +
@@ -221,12 +193,64 @@
                 }
             }).page('first').draw('page');
             
-    function switchTreck (numTreck) {
-            audio.src = '.' + playlist[numTreck];
+    btnPlay.addEventListener("click", function() {
+            audio.play();
+            isAudioPlay = true;
             table.draw(false);
-            //localStorage.setItem('audioSrc', './Audios/' + playlist[numTreck]);
+            sessionStorage.setItem('isAudioPlay', 'true');
+            audioPlay = setInterval(function () {
+                let audioTime = Math.round(audio.currentTime);
+                sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
+                sessionStorage.setItem('audioTime', audio.currentTime);
+                let audioLength = Math.round(audio.duration)
+                if (audioTime == audioLength && treck < playlist.length - 1) {
+                    treck++;
+                    switchTreck(treck);
+                } else if (audioTime == audioLength && treck >= playlist.length - 1) {
+                    treck = 0;
+                    switchTreck(treck);
+                }
+            }, 10);
+        });
+        
+        btnPause.addEventListener("click", function() {
+            audio.pause();
+            isAudioPlay = false;
+            sessionStorage.setItem('isAudioPlay', 'false');
+            table.draw(false);
+            clearInterval(audioPlay);
+        });
+        btnPrev.addEventListener("click", function() {
+            if (treck > 0) {
+                treck--;
+                switchTreck(treck);
+            } else {
+                treck = playlist.length - 1;
+                switchTreck(treck);
+            }
+        });
+        
+        btnNext.addEventListener("click", function() {
+            if (treck < playlist.length - 1) {
+                treck++;
+                switchTreck(treck);
+            } else {
+                treck = 0;
+                switchTreck(treck);
+            }
+        });
+    
+    
+    function switchTreck (numTreck) {
+            sessionStorage.setItem('treck', numTreck);
+            audio.src = '.' + playlist[numTreck];
+            isAudioPlay = true;
+            sessionStorage.setItem('isAudioPlay', 'true');
+            table.draw(false);
+            localStorage.setItem('audioSrc', '.' + playlist[numTreck]);
             audio.currentTime = 0;
             audio.play();
+            table.draw(false);
         }
     
     $('#submit').on('click', function (e) {
@@ -289,9 +313,27 @@
                         var numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
                        
                         playlist.splice(numberInPlaylist - 1, 1);
+                        console.log(treck);
+                        console.log(numberInPlaylist - 1);
+                        if (treck == numberInPlaylist - 1) {
+                            if (treck == playlist.length) {
+                                switchTreck(treck - 1);
+                                console.log(treck);
+                            }
+                            else {
+                             switchTreck(treck);
+                             }
+                            
+                             audio.pause();
+                             sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
+                             sessionStorage.setItem('audioTime', audio.currentTime);
+                             sessionStorage.setItem('isAudioPlay', 'false');
+                                                    
+                        }
                         if (treck > numberInPlaylist - 1) {
                             treck--;
                         }
+                        
                             try {
                                 table.draw(false);
                                 
