@@ -1,5 +1,7 @@
-﻿using AudioPlayer.Models.ApiRequestModels;
+﻿using System.Text;
+using AudioPlayer.Models.ApiRequestModels;
 using AudioPlayer.Models.ApiResponseModel;
+using Newtonsoft.Json;
 
 namespace AudioPlayer.Client.Services;
 
@@ -29,16 +31,13 @@ public class AudiosService
         var requestUrl = Api.Audios.GetAudio("https://localhost:44353", audioId);
         var response = await _httpClient.GetAsync(requestUrl);
 
-        if (response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode)
         {
-            var audio = await response.Content.ReadAsAsync<AudioViewModel>();
-            return audio;
-        }
-        else
-        {
-            var responseString = response.Content.ReadAsStringAsync().Result;
             throw new Exception($"Ошибка получения данных о аудио из {requestUrl} (код: {response.StatusCode}).");
         }
+        
+        var audio = await response.Content.ReadAsAsync<AudioViewModel>();
+        return audio;
     }
 
     public async Task UpdateAudioAsync(AudioViewModel audioViewModel)
@@ -54,10 +53,11 @@ public class AudiosService
             throw new Exception($"Ошибка обновления данных о аудио из {requestUrl} (код: {response.StatusCode}).");
         }
     }
+
     public async Task DeleteAudioAsync(AudioViewModel audio)
     {
         var requestUrl = Api.Audios.DeleteAudio("https://localhost:44353", audio.NumberInPlayList);
 
-        var response = await _httpClient.DeleteAsync(requestUrl);
+        await _httpClient.DeleteAsync(requestUrl);
     }
 }
