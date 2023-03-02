@@ -68,14 +68,11 @@
     }
     
     let track;
-    
-    
-    
 
     table = $('#audio_table').DataTable(
         {
             'info': false,
-            'lengthMenu': [4, 8, 16],
+            'lengthMenu': [10, 25, 50, 100],
             'rowReorder': true,
             'order': [],
             "processing": true,
@@ -113,7 +110,10 @@
                     name: 'Duration',
                     render: function(data)
                     {
-                        return data.duration;
+                        if (data.numberInPlayList - 1 == track && isAudioPlay) {
+                            return '<button class="play" data-pause-btn data-url=' + data.numberInPlayList + '><span style="margin-right: 5px;" class="fa-solid fa-stop"></button>' + data.duration;
+                        }
+                        return '<button class="play" data-play-btn data-url=' + data.numberInPlayList + '><span style="margin-right: 5px;" class="fa-solid fa-play"></button>' + data.duration;
                     }
                 },
                 {
@@ -239,6 +239,7 @@
     });
     
     function switchTrack (numTrack) {
+        track = numTrack;
         sessionStorage.setItem('track', numTrack);
         audio.src = '.' + playlist[numTrack];
         isAudioPlay = true;
@@ -382,5 +383,18 @@
             event.preventDefault();
             placeholderElement.find('.modal').modal('hide');
         });
+    });
+    
+    table.on('click', 'button[data-play-btn]', function () {
+        let numberInPlayList = $(this).data('url');
+        switchTrack(numberInPlayList - 1);
+    });
+    
+    table.on('click', 'button[data-pause-btn]', function () {
+        audio.pause();
+        isAudioPlay = false;
+        sessionStorage.setItem('isAudioPlay', 'false');
+        table.draw(false);
+        clearInterval(audioPlay);
     });
 </script>
