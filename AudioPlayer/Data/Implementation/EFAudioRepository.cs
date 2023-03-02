@@ -9,6 +9,7 @@ using LinqKit;
 
 namespace AudioPlayer.Data.Implementation;
 
+// ReSharper disable once InconsistentNaming
 public class EFAudioRepository : EFGenericRepository<Audio>
 {
     public EFAudioRepository(ApplicationContext context) : base(context)
@@ -71,13 +72,9 @@ public class EFAudioRepository : EFGenericRepository<Audio>
         return GetQueryable().AsEnumerable().OrderBy(audio => audio.Id);
     }
     
-    public List<Audio> GetAll(AudiosSelectParameters parameters, bool isNoTracking = false)
+    public List<Audio> GetAll(AudiosSelectParameters parameters)
     {
         var filterExpression = BuildAudiosExpression(parameters);
-        
-        var orderColumnName = string.IsNullOrEmpty(parameters.OrderParameter.Name)
-            ? "Name asc"
-            : parameters.OrderParameter.OrderByToString();
 
         return GetQueryable(filterExpression,
             orderBy: q => q.OrderBy("Id asc"),

@@ -4,7 +4,7 @@ using AudioPlayer.Models.ApiRequestModels;
 
 namespace AudioPlayer.Client.Services;
 
-public class Api
+public static class Api
 {
     public static class Audios
     {

@@ -13,7 +13,7 @@ public class HomeController : Controller
 {
     private readonly AudioService _audiosService;
 
-    public HomeController(HttpClient httpClient)
+    public HomeController()
     {
         _audiosService = new AudioService(new EFAudioRepository(new ApplicationContext()));
     }

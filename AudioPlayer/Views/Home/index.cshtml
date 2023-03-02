@@ -173,11 +173,11 @@
                 sessionStorage.setItem('audioSrc', '.' + playlist[track]);
                 sessionStorage.setItem('audioTime', audio.currentTime);
                 let audioLength = Math.round(audio.duration);
-                if (audioTime === audioLength.toString() && track < playlist.length - 1) {
+                if (audioTime == audioLength.toString() && track < playlist.length - 1) {
                     track++;
                     switchTrack(track);
                 } 
-                else if (audioTime === audioLength.toString()) {
+                else if (audioTime == audioLength.toString()) {
                     track = 0;
                     switchTrack(track);
                 }

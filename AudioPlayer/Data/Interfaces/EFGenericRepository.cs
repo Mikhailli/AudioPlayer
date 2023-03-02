@@ -1,15 +1,11 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AudioPlayer.Data.Domain.Interfaces;
-using AudioPlayer.Models;
 using System.Data.Entity;
 
 namespace AudioPlayer.Data.Interfaces;
 
+// ReSharper disable once InconsistentNaming
 public class EFGenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : BaseEntity
 {
     protected readonly DbContext _dbContext;

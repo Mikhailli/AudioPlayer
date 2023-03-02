@@ -1,5 +1,4 @@
-﻿using System.Net;
-using AudioPlayer.Client.Services;
+﻿using AudioPlayer.Client.Services;
 using AudioPlayer.Data.Implementation;
 using AudioPlayer.Data.Services;
 using AudioPlayer.Models;
@@ -12,8 +11,8 @@ namespace AudioPlayer.Controllers;
 
 public class HomeController : Controller
 {
-    IWebHostEnvironment _appEnvironment;
-    private EFAudioRepository _repository;
+    readonly IWebHostEnvironment _appEnvironment;
+    private readonly EFAudioRepository _repository;
     private readonly AudiosService _audioServiceClient;
     private readonly AudioService _audioServiceData;
     
@@ -30,36 +29,6 @@ public class HomeController : Controller
     {
         return View(_audioServiceData.GetAll());
     }
-    
-    [HttpPost]
-    public async Task<Audio> Index(IFormFile uploadedFile)
-    {
-        var audio = new Audio();
-        if (uploadedFile != null)
-        {
-            var path = "/Audios/" + uploadedFile.FileName;
-            
-            var fullPath = _appEnvironment.WebRootPath + path;
-            SaveFile(uploadedFile, fullPath);
-            using (var file = TagLib.File.Create(fullPath))
-            {
-                if ((file.Properties.MediaTypes == MediaTypes.Audio) is false)
-                {
-                    throw new ArgumentException($"{file.Name} не является аудиофайлом");
-                }
-
-                audio = new Audio() { Name = uploadedFile.FileName, Path = path, Duration = (int)decimal.Ceiling(Convert.ToDecimal(file.Properties.Duration.TotalSeconds))};
-                _repository.Add(audio);
-                _repository.CommitChanges();
-                
-                //await _audioServiceClient.SaveAudioAsync(audio);
-                
-            }
-            
-        }
-        return audio;
-    }
-    
     
     [HttpPost]
     [Route("[controller]/get")]
@@ -83,7 +52,7 @@ public class HomeController : Controller
     {
         var uploadedFile = Request.Form.Files[0];
         
-        if (uploadedFile != null)
+        if (uploadedFile is not null)
         {
             var path = "/Audios/" + uploadedFile.FileName;
             
@@ -116,8 +85,6 @@ public class HomeController : Controller
     public async Task<IActionResult> UpdateAudio(AudioViewModel audioViewModel)
     {
         var audio = await _audioServiceClient.GetAudioAsync(audioViewModel.NumberInPlayList);
-
-        //TODO проверка уникальности имени
 
         audio.Name = audioViewModel.Name;
 

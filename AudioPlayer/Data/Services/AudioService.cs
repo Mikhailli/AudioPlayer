@@ -25,7 +25,7 @@ public class AudioService
         var filteredRecordsTotal = _repository.GetCount(parameters);
 
         var audios = _repository.GetAll().ToList();
-        var audioViewModels = ConvertToAudioViewModels(_repository.GetAll(parameters, true));
+        var audioViewModels = ConvertToAudioViewModels(_repository.GetAll(parameters));
 
         for (var i = 0; i < audios.Count; i++)
         {
@@ -46,13 +46,6 @@ public class AudioService
 
     public void UpdateAudio(AudioViewModel audioViewModel)
     {
-        /*if (_repository.GetCount(audio =>
-                audio.Id != audioViewModel.Id && ReturnsAudioNameWithoutExtension(audio.Name) == audioViewModel.Name) >
-            0)
-        {
-            throw new Exception($"Аудио с именем {audioViewModel.Name} уже существует.");
-        }*/
-
         var audioToUpdate = _repository.GetById(audioViewModel.Id);
         var audioNameExtension = ReturnsAudioNameExtension(audioToUpdate.Name);
         audioToUpdate.Name = audioViewModel.Name + audioNameExtension;
