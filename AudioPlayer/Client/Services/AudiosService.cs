@@ -41,6 +41,19 @@ public class AudiosService
         }
     }
 
+    public async Task UpdateAudioAsync(AudioViewModel audioViewModel)
+    {
+        var requestUrl = Api.Audios.UpdateAudio("https://localhost:44353", audioViewModel.NumberInPlayList);
+
+        var jsonString = JsonConvert.SerializeObject(audioViewModel);
+        var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PutAsync(requestUrl, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Ошибка обновления данных о аудио из {requestUrl} (код: {response.StatusCode}).");
+        }
+    }
     public async Task DeleteAudioAsync(AudioViewModel audio)
     {
         var requestUrl = Api.Audios.DeleteAudio("https://localhost:44353", audio.NumberInPlayList);
