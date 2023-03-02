@@ -3,50 +3,44 @@
 @{
     Layout = "_Layout";
 }
-<style>
-
-
-</style>
 
 <link rel="stylesheet" type="text/css" href="~/css/dataTable.css">
 <link rel="stylesheet" type="text/css" href="~/css/index.css">
-<h1>Выберите файл для загрузки</h1>
-@*<form asp-action="Index" asp-controller="Home" method="post" enctype="multipart/form-data">
-    <input id="audiofile" class="custom-file-input" type="file" accept="audio/*" name="uploadedFile" title=" "/><br>
-    <input id="submit" type="submit" value="Загрузить" />
-</form>*@
 
-    <input id="uploadFile" class="custom-file-input" type="file" accept="audio/*" name="uploadedFile" title=" "/><br>
-    <input id="submit" type="submit" value="Загрузить" />
-
-<button></button>
-<div class="audioplayer">
-    <audio id="audio" controls></audio>
-    <div id="controls">
-        <button style="margin-left: 10px; margin-bottom: 5px;" class="play"><img src="~/play.png" alt="|>"/></button>
-        <button style="margin-bottom: 5px;" class="pause"><img src="~/pause.png" alt="||"/></button>
-        <button style="margin-right: 20px; margin-bottom: 5px; float: right" class="next"><img src="~/next_button.png" alt=">>"/></button>
-        <button style="margin-right: 12px; margin-bottom: 5px; float: right" class="prev"><img src="~/previous_button.png" alt="<<"/></button>
-    </div>
-</div>
- 
-<h3>Все файлы</h3>
 @foreach(var f in Model)
 {
     <p style="display: none" class="name">@(f.Path)</p>
 }
 
-<div class="features">
-    <table class="stripe row-border hover table-opacity-background display nowrap text-center" id="audio_table">
-        <thead>
-        <tr>
-            <th>№ в плейлисте</th>
-            <th data-name>Название трека</th>
-            <th>Длительность</th>
-            <th></th>
-        </tr>
-        </thead>
-    </table>
+<div style="margin-top: 5px; display: inline-block; width: 100%; box-sizing: border-box">
+    <div style="float: left; clear: right;">
+        <div class="audioplayer" style="min-width: 300px; margin-left: 10px; width: 20%;">
+            <audio id="audio" controls></audio>
+            <div id="controls">
+                <button style="margin-left: 10px; margin-bottom: 5px;" class="play"><img src="~/play.png" alt="|>"/></button>
+                <button style="margin-bottom: 5px;" class="pause"><img src="~/pause.png" alt="||"/></button>
+                <button style="margin-right: 20px; margin-bottom: 5px; float: right" class="next"><img src="~/next_button.png" alt=">>"/></button>
+                <button style="margin-right: 12px; margin-bottom: 5px; float: right" class="prev"><img src="~/previous_button.png" alt="<<"/></button>
+            </div>
+        </div>
+        <div style="min-width: 300px; margin-left: 10px; width: 400px; float: left; clear: right;">
+            <h4>Выберите файл для загрузки</h4>
+            <input id="uploadFile" class="custom-file-input" type="file" accept="audio/*" name="uploadedFile" title=" "/><br>
+            <input id="submit" type="submit" value="Загрузить" />
+        </div>
+    </div>
+    <div class="features" style="margin-right: 10px; width: 70%; float: right; max-width: 100%;">
+        <table class="stripe row-border hover table-opacity-background display nowrap text-center" id="audio_table">
+            <thead>
+            <tr>
+                <th>№ в плейлисте</th>
+                <th data-name>Название трека</th>
+                <th>Длительность</th>
+                <th></th>
+            </tr>
+            </thead>
+        </table>
+    </div>
 </div>
 
 <div id="modal-placeholder"></div>
@@ -54,15 +48,14 @@
 <script asp-src-include="js/datatables/jquery.js" type="text/javascript" charset="UTF-8"></script>
 <script asp-src-include="js/datatables/dataTable.js" type="text/javascript" charset="UTF-8"></script>
 <script asp-src-include="js/indexMenu.js" asp-append-version="true"></script>
+<script src="https://kit.fontawesome.com/c72087de1f.js" crossorigin="anonymous"></script>
 
 <script>
-    let audio = document.getElementById("audio");   
-    let time = document.querySelector(".time");     
+    let audio = document.getElementById("audio");      
     let btnPlay = document.querySelector(".play");   
     let btnPause = document.querySelector(".pause"); 
     let btnPrev = document.querySelector(".prev");  
     let btnNext = document.querySelector(".next");  
-    
     
     let playlist = [];
     let isAudioPlay;
@@ -74,325 +67,320 @@
         playlist.push(song);
     }
     
-    let treck;
+    let track;
+    
+    
+    
+
+    table = $('#audio_table').DataTable(
+        {
+            'info': false,
+            'lengthMenu': [4, 8, 16],
+            'rowReorder': true,
+            'order': [],
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": `/Home/get`,
+                "type": "POST"
+            },
+            'columnDefs': [
+                { orderable: false, targets: '_all' }
+            ],
+            'createdRow': function (row, data) {
+                $(row).attr('data-number', data.numberInPlayList);  
+            },
+            "columns": [
+                {
+                    data: null,
+                    name: 'NumberInPlayList',
+                    render: function(data)
+                    {
+                        return '<td class="withBorder">' + data.numberInPlayList + '</td>';
+                    }
+                },
+                {
+                    data: null,
+                    name: 'Name',
+                    render: function(data)
+                    {
+                        return data.name;
+                    }
+                },
+                {
+                    data: null,
+                    name: 'Duration',
+                    render: function(data)
+                    {
+                        return data.duration;
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data) {
+                        if (data.numberInPlayList - 1 == track && isAudioPlay) {
+                            return '<button class="btn btn-sm btn-primary mr-1" data-update-btn data-url="/Home/UpdateAudio?audioId=' + data.numberInPlayList + '" ><span style="margin-right: 5px;" class="fas fa-pencil-alt"></span> Изменить</button>';
+                        }
+                        return '<button class="btn btn-sm btn-primary mr-1" data-update-btn data-url="/Home/UpdateAudio?audioId=' + data.numberInPlayList + '" ><span style="margin-right: 5px;" class="fas fa-pencil-alt"></span> Изменить</button>' +
+                            '<button style="margin-left: 10px" class="btn btn-sm btn-danger my-1" data-delete-btn data-url="/Home/DeleteAudio?audioId=' + data.numberInPlayList + '"><span style="margin-right: 5px;" class="fas fa-times">  </span> Удалить</button>';
+                    },
+                    width: 'auto'
+                }
+            ],
+            "style_data_conditional": [
+                    {
+                        'borderRight': '5px solid red',
+                        'borderLeft': '5px solid red',
+                    },
+                ],
+            'language':
+            {
+                'search': 'Поиск',
+                'lengthMenu': 'Показать _MENU_ элементов',
+                'zeroRecords': 'Совпадений не найдено',
+                'processing': 'Данные загружаются...',
+                'paginate':
+                {
+                    'previous': '<',
+                    'next': '>'
+                }
+            },
+            searchPanes: {
+                viewTotal: true
+            }
+        }
+    ).page('first').draw('page');
     
     window.onload = function() {
-        if (sessionStorage.getItem('isAudioPlay') == null) {
-            isAudioPlay = false;
+        isAudioPlay = false;
+        if (sessionStorage.getItem('track') == null) {
+            track = 0;
         }
         else {
-            isAudioPlay = sessionStorage.getItem('isAudioPlay');
+            track = sessionStorage.getItem('track');
         }
-        if (sessionStorage.getItem('treck') == null) {
-                    treck = 0;
-                    }
-            else {
-                treck = sessionStorage.getItem('treck');
-            }
-       
+    
         if (sessionStorage.getItem('audioTime') == null) {
-        audio.src = '.' + playlist[0];
-        }
+            audio.src = '.' + playlist[0];
+        } 
         else {
-           audio.src = sessionStorage.getItem('audioSrc');
-           audio.currentTime = sessionStorage.getItem('audioTime');
-           audio.play();
-                   audioPlay = setInterval(function () {
-                       let audioTime = sessionStorage.getItem('audioTime');
-                       sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
-                       sessionStorage.setItem('audioTime', audio.currentTime);
-                       let audioLength = Math.round(audio.duration)
-                       time.style.width = (audioTime * 100) / audioLength + '%';
-                       if (audioTime == audioLength && treck < playlist.length - 1) {
-                           treck++;
-                          
-                           switchTreck(treck);
-                       } else if (audioTime == audioLength && treck >= playlist.length - 1) {
-                           treck = 0;
-                           
-                           switchTreck(treck);
-                       }
-                   }, 10);
-        }
-    }
-    
-    
-    
-    
-    
-    table = $('#audio_table').DataTable(
-            {
-                'info': false,
-                'lengthMenu': [4, 8, 16],
-                'rowReorder': true,
-                'order': [],
-                "processing": true,
-                "serverSide": true,
-                "filter": true,
-                "ajax": {
-                    "url": `/Home/get`,
-                    "type": "POST"
-                },
-                'columnDefs': [
-                    { orderable: false, targets: '_all' }
-                ],
-                'createdRow': function (row, data, dataIndex) {
-                  $(row).attr('data-number', data.numberInPlayList);  
-                },
-                "columns": [
-                    {
-                        data: null,
-                        name: 'NumberInPlayList',
-                        render: function(data)
-                        {
-                            return data.numberInPlayList;
-                        }
-                    },
-                    {
-                        data: null,
-                        name: 'Name',
-                        render: function(data)
-                        {
-                            return data.name;
-                        }
-                    },
-                    {
-                        data: null,
-                        name: 'Duration',
-                        render: function(data)
-                        {
-                            return data.duration;
-                        }
-                    },
-                    {
-                        data: null,
-                        render: function (data, type, row) {
-                            if (data.numberInPlayList - 1 == treck && isAudioPlay) {
-                                return '';
-                            }
-                            return '<button class="btn btn-sm btn-primary mr-1" data-update-btn data-url="/Home/UpdateAudio?audioId=' + data.numberInPlayList + '" ><span class="fas fa-pencil-alt"></span> Изменить</button>' +
-                            '<button class="btn btn-sm btn-danger my-1" data-delete-btn data-url="/Home/DeleteAudio?audioId=' + data.numberInPlayList + '"><span class="fas fa-times"></span> Удалить</button>';
-                        },
-                        width: 'auto'
-                    }
-                ],
-                'language':
-                    {
-                        'search': 'Поиск',
-                        'lengthMenu': 'Показать _MENU_ элементов',
-                        'zeroRecords': 'Совпадений не найдено',
-                        'processing': 'Данные загружаются...',
-                        'paginate':
-                            {
-                                'previous': '<',
-                                'next': '>'
-                            }
-                    },
-                searchPanes: {
-                    viewTotal: true
-                }
-            }).page('first').draw('page');
-            
-    btnPlay.addEventListener("click", function() {
+            audio.src = sessionStorage.getItem('audioSrc');
+            audio.currentTime = sessionStorage.getItem('audioTime');
             audio.play();
-            isAudioPlay = true;
-            table.draw(false);
-            sessionStorage.setItem('isAudioPlay', 'true');
             audioPlay = setInterval(function () {
-                let audioTime = Math.round(audio.currentTime);
-                sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
+                let audioTime = sessionStorage.getItem('audioTime');
+                sessionStorage.setItem('audioSrc', '.' + playlist[track]);
                 sessionStorage.setItem('audioTime', audio.currentTime);
-                let audioLength = Math.round(audio.duration)
-                if (audioTime == audioLength && treck < playlist.length - 1) {
-                    treck++;
-                    switchTreck(treck);
-                } else if (audioTime == audioLength && treck >= playlist.length - 1) {
-                    treck = 0;
-                    switchTreck(treck);
+                let audioLength = Math.round(audio.duration);
+                if (audioTime === audioLength.toString() && track < playlist.length - 1) {
+                    track++;
+                    switchTrack(track);
+                } 
+                else if (audioTime === audioLength.toString()) {
+                    track = 0;
+                    switchTrack(track);
                 }
             }, 10);
-        });
-        
-        btnPause.addEventListener("click", function() {
-            audio.pause();
-            isAudioPlay = false;
-            sessionStorage.setItem('isAudioPlay', 'false');
-            table.draw(false);
-            clearInterval(audioPlay);
-        });
-        btnPrev.addEventListener("click", function() {
-            if (treck > 0) {
-                treck--;
-                switchTreck(treck);
-            } else {
-                treck = playlist.length - 1;
-                switchTreck(treck);
-            }
-        });
-        
-        btnNext.addEventListener("click", function() {
-            if (treck < playlist.length - 1) {
-                treck++;
-                switchTreck(treck);
-            } else {
-                treck = 0;
-                switchTreck(treck);
-            }
-        });
-    
-    
-    function switchTreck (numTreck) {
-            sessionStorage.setItem('treck', numTreck);
-            audio.src = '.' + playlist[numTreck];
-            isAudioPlay = true;
-            sessionStorage.setItem('isAudioPlay', 'true');
-            table.draw(false);
-            localStorage.setItem('audioSrc', '.' + playlist[numTreck]);
-            audio.currentTime = 0;
-            audio.play();
-            table.draw(false);
         }
+            
+        table.draw(false);
+    }
+    
+    btnPlay.addEventListener("click", function() {
+        audio.play();
+        isAudioPlay = true;
+        table.draw(false);
+        sessionStorage.setItem('isAudioPlay', 'true');
+        audioPlay = setInterval(function () {
+            let audioTime = Math.round(audio.currentTime);
+            sessionStorage.setItem('audioSrc', '.' + playlist[track]);
+            sessionStorage.setItem('audioTime', audio.currentTime);
+            let audioLength = Math.round(audio.duration)
+            if (audioTime === audioLength && track < playlist.length - 1) {
+                track++;
+                switchTrack(track);
+            } 
+            else if (audioTime === audioLength && track >= playlist.length - 1) {
+                track = 0;
+                switchTrack(track);
+            }
+        }, 10);
+    });
+        
+    btnPause.addEventListener("click", function() {
+        audio.pause();
+        isAudioPlay = false;
+        sessionStorage.setItem('isAudioPlay', 'false');
+        table.draw(false);
+        clearInterval(audioPlay);
+    });
+    
+    btnPrev.addEventListener("click", function() {
+        if (track > 0) {
+            track--;
+            switchTrack(track);
+        } 
+        else {
+            track = playlist.length - 1;
+            switchTrack(track);
+        }
+    });
+        
+    btnNext.addEventListener("click", function() {
+        if (track < playlist.length - 1) {
+            track++;
+            switchTrack(track);
+        }
+        else {
+            track = 0;
+            switchTrack(track);
+        }
+    });
+    
+    function switchTrack (numTrack) {
+        sessionStorage.setItem('track', numTrack);
+        audio.src = '.' + playlist[numTrack];
+        isAudioPlay = true;
+        sessionStorage.setItem('isAudioPlay', 'true');
+        localStorage.setItem('audioSrc', '.' + playlist[numTrack]);
+        audio.currentTime = 0;
+        audio.play();
+        table.draw(false);
+    }
     
     $('#submit').on('click', function (e) {
-                e.preventDefault();
-                var files = document.getElementById('uploadFile').files;
-                if (files.length > 0) {
-                    if (window.FormData !== undefined) {
-                        var data = new FormData();
-                        data.append("file" + 0, files[0]);
-                        
-         
-                        $.ajax({
-                            type: "POST",
-                            url: '@Url.Action("AddAudio", "Home")',
-                            contentType: false,
-                            processData: false,
-                            data: data,
-                            success: function (result) {
-                                playlist.push('/Audios/' + files.item(0).name);
-                                alert(result);
-                                table.draw(false);
-                            },
-                            error: function (xhr, status, p3) {
-                                alert(xhr.responseText);
-                            }
-                        });
-                        
-                    } else {
-                        alert("Браузер не поддерживает загрузку файлов HTML5!");
+        e.preventDefault();
+        let files = document.getElementById('uploadFile').files;
+        if (files.length > 0) {
+            if (window.FormData !== undefined) {
+                let data = new FormData();
+                data.append("file" + 0, files[0]);
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("AddAudio", "Home")',
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    success: function (result) {
+                        playlist.push('/Audios/' + files.item(0).name);
+                        alert(result);
+                        table.draw(false);
+                        },
+                        error: function (xhr) {
+                            alert(xhr.responseText);
+                        }
                     }
+                );
+                        
+            } 
+            else {
+                alert("Браузер не поддерживает загрузку файлов HTML5!");
+            }
+        }
+    });
+            
+    let placeholderElement = $('#modal-placeholder');
+            
+    placeholderElement.on('hide.bs.modal', '.modal', function () {
+        placeholderElement.off('click', '[data-dismiss="modal"]');
+    });
+            
+    table.on('click', 'button[data-delete-btn]', function () {
+        let request = $(this).data('url');
+        $.get(request).done(function (data) {
+            placeholderElement.html(data);
+            console.log(data);
+            placeholderElement.find('.modal').modal('show');
+        });
+                
+        placeholderElement.on('click', '[data-save="modal"]', function (event) {
+            event.preventDefault();
+                    
+            let form = $(this).parents('.modal').find('form');
+            let actionUrl = form.attr('action');
+            let dataToSend = form.serialize();
+                    
+            $.post(actionUrl, dataToSend).done(function (data) {
+                let newBody = $('.modal-body', data);
+                placeholderElement.find('.modal-body').replaceWith(newBody);
+                let numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
+                       
+                playlist.splice(numberInPlaylist - 1, 1);
+                if (track.toString() === (numberInPlaylist - 1).toString()) {
+                    if (track.toString() === playlist.length.toString()) {
+                        track--;
+                        switchTrack(track);
+                    }
+                    else {
+                        switchTrack(track);
+                    }
+                    
+                    isAudioPlay = false;
+                    audio.pause();
+                    sessionStorage.setItem('audioSrc', '.' + playlist[track]);
+                    sessionStorage.setItem('audioTime', audio.currentTime);
+                    sessionStorage.setItem('isAudioPlay', 'false');
+                                                    
+                }
+                if (track > numberInPlaylist - 1) {
+                    track--;
+                }
+                        
+                try {
+                    table.draw(false);
+                } 
+                finally {
+                    placeholderElement.off('click', '[data-save="modal"]');
+                }
+                placeholderElement.find('.modal').modal('hide');
+            });
+                    
+        });
+    
+        placeholderElement.on('click', '[data-mdb-dismiss="modal"]', function (event) {
+            event.preventDefault();
+            placeholderElement.find('.modal').modal('hide');
+        });
+    });
+            
+    table.on('click', 'button[data-update-btn]', function () {
+        let requestUrl = $(this).data('url');
+        $.get(requestUrl).done(function (data) {
+            placeholderElement.html(data);
+            placeholderElement.find('.modal').modal('show');
+        });
+                
+        placeholderElement.on('click', '[data-save="modal"]', function (event) {
+            event.preventDefault();
+                    
+            let form = $(this).parents('.modal').find('form');
+            let actionUrl = form.attr('action');
+            let dataToSend = form.serialize();
+                    
+            $.post(actionUrl, dataToSend).done(function (data) {
+                let newBody = $('.modal-body', data);
+                placeholderElement.find('.modal-body').replaceWith(newBody);
+                        
+                try {
+                    let numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
+                    let audioName = newBody.find('[name="Name"]').val();
+                    let rowToUpdate = $('table#audio_table').find('tr[data-number="' + numberInPlaylist + '"]')
+                    if (rowToUpdate) {
+                        rowToUpdate.find('th[data-name]').text(audioName);
+                    }
+                    table.draw(false);
+                } 
+                finally {
+                    placeholderElement.off('click', '[data-save="modal"]');
+                    placeholderElement.find('.modal').modal('hide');
                 }
             });
-            
-            var placeholderElement = $('#modal-placeholder');
-            
-            placeholderElement.on('hide.bs.modal', '.modal', function () {
-                placeholderElement.off('click', '[data-dismiss="modal"]');
-            });
-            
-            table.on('click', 'button[data-delete-btn]', function () {
-                var request = $(this).data('url');
-                $.get(request).done(function (data) {
-                    placeholderElement.html(data);
-                    console.log(data);
-                    placeholderElement.find('.modal').modal('show');
-                });
-                
-                placeholderElement.on('click',
-                    '[data-save="modal"]',
-                    function (event) {
-                    event.preventDefault();
-                    
-                    var form = $(this).parents('.modal').find('form');
-                    var actionUrl = form.attr('action');
-                    var dataToSend = form.serialize();
-                    
-                    $.post(actionUrl, dataToSend).done(function (data) {
-                        var newBody = $('.modal-body', data);
-                        placeholderElement.find('.modal-body').replaceWith(newBody);
-                        var numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
-                       
-                        playlist.splice(numberInPlaylist - 1, 1);
-                        console.log(treck);
-                        console.log(numberInPlaylist - 1);
-                        if (treck == numberInPlaylist - 1) {
-                            if (treck == playlist.length) {
-                                switchTreck(treck - 1);
-                                console.log(treck);
-                            }
-                            else {
-                             switchTreck(treck);
-                             }
-                            
-                             audio.pause();
-                             sessionStorage.setItem('audioSrc', '.' + playlist[treck]);
-                             sessionStorage.setItem('audioTime', audio.currentTime);
-                             sessionStorage.setItem('isAudioPlay', 'false');
-                                                    
-                        }
-                        if (treck > numberInPlaylist - 1) {
-                            treck--;
-                        }
-                        
-                            try {
-                                table.draw(false);
-                                
-                            } finally {
-                                placeholderElement.off('click', '[data-save="modal"]');
-                            }
-                        placeholderElement.find('.modal').modal('hide');
-                    });
-                    
-                });
+        });
     
-                placeholderElement.on('click',
-                    '[data-mdb-dismiss="modal"]',
-                    function (event) {
-                        event.preventDefault();
-                        placeholderElement.find('.modal').modal('hide');
-                    });
-            });
-            
-            table.on('click', 'button[data-update-btn]', function () {
-                var requestUrl = $(this).data('url');
-                $.get(requestUrl).done(function (data) {
-                    placeholderElement.html(data);
-                    placeholderElement.find('.modal').modal('show');
-                });
-                
-                placeholderElement.on('click',
-                    '[data-save="modal"]',
-                    function (event) {
-                    event.preventDefault();
-                    
-                    var form = $(this).parents('.modal').find('form');
-                    var actionUrl = form.attr('action');
-                    var dataToSend = form.serialize();
-                    
-                    $.post(actionUrl, dataToSend).done(function (data) {
-                        var newBody = $('.modal-body', data);
-                        placeholderElement.find('.modal-body').replaceWith(newBody);
-                        
-                        try {
-                            var numberInPlaylist = newBody.find('[name="NumberInPlayList"]').val();
-                            var audioName = newBody.find('[name="Name"]').val();
-                            var rowToUpdate = $('table#audio_table').find('tr[data-number="' + numberInPlaylist + '"]')
-                            if (rowToUpdate) {
-                                rowToUpdate.find('th[data-name]').text(audioName);
-                            }
-                            table.draw(false);
-                        } finally {
-                            placeholderElement.off('click', '[data-save="modal"]');
-                            placeholderElement.find('.modal').modal('hide');
-                        }
-                    });
-                });
-    
-                placeholderElement.on('click',
-                    '[data-mdb-dismiss="modal"]',
-                    function (event) {
-                        event.preventDefault();
-                        placeholderElement.find('.modal').modal('hide');
-                    });
-            });
+        placeholderElement.on('click', '[data-mdb-dismiss="modal"]', function (event) {
+            event.preventDefault();
+            placeholderElement.find('.modal').modal('hide');
+        });
+    });
 </script>
