@@ -25,5 +25,6 @@ public class Api
 
         public static string GetAudio(string baseUrl, int audioId) => $"{baseUrl}/api/Home/{audioId}";
         public static string DeleteAudio(string baseUrl, int audioId) => $"{baseUrl}/api/Home/{audioId}";
+        public static string UpdateAudio(string baseUrl, int audioId) => $"{baseUrl}/api/Home/{audioId}";
     }
 }
