@@ -8,7 +8,7 @@ public sealed class ApplicationContext : DbContext
     public DbSet<Audio> Audio { get; set; } = null!;
     
     public ApplicationContext()
-        : base("CloudioPlayer")
+        : base("Server=localhost\\SQLEXPRESS01;Database=CloudioPlayer;Trusted_Connection=True;")
     {
         
     }

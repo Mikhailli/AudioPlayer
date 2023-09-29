@@ -1,9 +1,25 @@
 ﻿@import url(https://fonts.googleapis.com/css?family=Roboto:400,500,300,700);
 
+* {
+    margin: 0;
+    padding: 0;
+}
+html,
+body {
+    height: 100%;
+}
+
+footer {
+    margin-top: -80px;
+    /*Минус Высота футера*/
+    height: 80px;
+    /*Высота футера*/
+}
+
 section {
     width: 100%;
     display: inline-block;
-    background: #ccc;
+    background: #D8E6F3;
     height: 60vh;
     text-align: center;
     font-size: 22px;
@@ -13,7 +29,7 @@ section {
 }
 
 .footer-distributed {
-    background-color: #ecf0f1;
+    background-color: #D8E6F3;
     box-shadow: 0 1px 1px 0 rgb(236, 240, 241);
     box-sizing: border-box;
     width: 100%;

@@ -12,10 +12,9 @@
     <p style="display: none" class="name">@(f.Path)</p>
 }
 
-<div style="margin-top: 5px; display: inline-block; width: 100%; box-sizing: border-box">
-    <div style="float: left; clear: right;">
-        <div class="audioplayer" style="min-width: 300px; margin-left: 10px; width: 20%;">
-            <audio id="audio" controls></audio>
+<div class="wrapper" style="margin-top: 5px;">
+    <div class="audioplayer" style="margin-left: 10px;">
+        <audio id="audio" controls style="width: 100%; max-height: 30px"></audio>
             <div id="controls">
                 <button style="margin-left: 10px; margin-bottom: 5px;" class="play"><img src="~/play.png" alt="|>"/></button>
                 <button style="margin-bottom: 5px;" class="pause"><img src="~/pause.png" alt="||"/></button>
@@ -23,22 +22,50 @@
                 <button style="margin-right: 12px; margin-bottom: 5px; float: right" class="prev"><img src="~/previous_button.png" alt="<<"/></button>
             </div>
         </div>
-        <div style="min-width: 300px; margin-left: 10px; width: 400px; float: left; clear: right;">
-            <h4>Выберите файл для загрузки</h4>
-            <div style="margin-top: 5px; margin-bottom: 5px;">
-                <input style="display:none;" id="uploadFile" type="file" accept="audio/*" name="uploadedFile" title=" "/>
-                <button style="width: 200px;" id="bntUpload" class="btn btn-sm btn-primary mr-1">Выбрать файл</button>
-            </div>
-            <div style="margin-top: 5px; margin-bottom: 5px;">
-                <input style="width: 200px;" id="submit" class="btn btn-sm btn-primary mr-1" type="submit" value="Загрузить">
-            </div>
-            <div>
-                 <span id="selected_filename"></span>
-            </div>
+    <div class="wrapper2 download" style="min-width: 300px; margin-left: 10px; ">
+            <div class="text"><h4>Выберите файл для загрузки</h4></div>
+        
+        <div class="select_file" style="margin-top: 5px; margin-bottom: 5px;">
+            <input style="display: none;" id="uploadFile" type="file" accept="audio/*" name="uploadedFile" title=" "/>
+            <button style="display: table; margin: 0 auto; background-color: #AFCDE7; width: 80%;" id="bntUpload" class="btn btn-sm btn-primary mr-1">Выбрать файл</button>
+        </div>
+        <div class="upload_file" style="margin-top: 5px; margin-bottom: 5px;">
+            <input style="display: table; margin: 0 auto; background-color: #AFCDE7; width: 80%;" id="submit" class="btn btn-sm btn-primary mr-1" type="submit" value="Загрузить">
+        </div>
+        <div class="selected_filename">
+            <span id="selected_filename"></span>
+        </div>
+        <div class="radio_buttons">
+            <fieldset>
+                <legend>Some legend for radio buttons:</legend>
+                <div>
+                    <input type="radio" id="First Radio Button" name="scales"/>
+                    <label for="First Radio Button">First Radio Button</label>
+                </div>
+                <div>
+                    <input type="radio" id="Second Radio Button" name="horns"/>
+                    <label for="Second Radio Button">Second Radio Button</label>
+                </div>
+            </fieldset>
+        </div>
+        <div class="check_boxes">
+            <fieldset>
+                <legend>Some legend for check boxes:</legend>
+
+                <div>
+                    <input type="checkbox" id="First Check Box" name="scales"/>
+                    <label for="First Check Box">First Check Box</label>
+                </div>
+
+                <div>
+                    <input type="checkbox" id="Second Check Box" name="horns"/>
+                    <label for="Second Check Box">Second Check Box</label>
+                </div>
+            </fieldset>
         </div>
     </div>
-    <div class="features" style="margin-right: 10px; width: 70%; float: right; max-width: 100%;">
-        <table class="stripe row-border hover table-opacity-background display nowrap text-center" id="audio_table">
+    <div class="features" style="margin-right: 10px; width: 100%">
+        <table style="width: 100%" class="hover table-opacity-background display nowrap text-center" id="audio_table">
             <thead>
             <tr>
                 <th>№ в плейлисте</th>

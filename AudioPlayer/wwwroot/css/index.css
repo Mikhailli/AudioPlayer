@@ -26,16 +26,13 @@ body {
 }
 
 table {
-    border: 1px solid gray;
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    border-color: white;
 }
 
 a {
     color: inherit;
-}
-
-audio {
-    width: 300px;
-    height: 25px;
 }
 
 audio::-webkit-media-controls-play-button {
@@ -44,7 +41,7 @@ audio::-webkit-media-controls-play-button {
 }
 
 audio::-webkit-media-controls-panel {
-    background: #ADD8E6;
+    background:  #AFCDE7;
 }
 * {
     margin: 0;
@@ -56,11 +53,58 @@ button {
     appearance: none;
     background-color: inherit;
 }
+
 .audioplayer {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
     border-radius: 10px;
-    height: 6%;
-    width: 20%;
-    background-color: #ADD8E6;
+    background-color:  #AFCDE7;
+}
+
+.download {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+.features {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+    padding-bottom: 80px;
+}
+
+.text {
+    grid-column: 1 / 3;
+    grid-row: 1 / 2;
+}
+
+.select_file {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+.upload_file {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+}
+
+.selected_filename {
+    grid-column: 1 / 3;
+    grid-row: 3 / 4
+}
+
+.radio_buttons {
+    grid-column: 1 / 3;
+    grid-row: 4 / 5;
+}
+
+.check_boxes {
+    grid-column: 1 / 3;
+    grid-row: 5 / 6
 }
 
 .fa-play {
@@ -74,4 +118,55 @@ button {
 img {
     width: 20px;
     height: 20px;
+}
+
+.wrapper {
+    display: grid;
+    gap: 5px;
+    grid-template-rows: 70px;
+    min-height: 100%;
+}
+
+.wrapper2 {
+    display: grid;
+    gap: 5px;
+    grid-template-columns: 50%;
+    grid-template-rows: 42px 52px 42px 90px;
+}
+
+.wrapper > div {
+    min-width: 100px;
+}
+
+.wrapper2 > div {
+    min-width: 100px;
+}
+
+#audio_table_wrapper {
+    width: 100% !important;
+}
+
+th {
+    background: #AFCDE7;
+    color: white;
+    padding: 10px 20px;
+}
+th, td {
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    border-color: white;
+}
+td {
+    background: #D8E6F3;
+}
+
+table.dataTable thead th {
+    border-color: white;
+}
+table.dataTable tfoot th {
+    border-color: white;
+}
+
+table.dataTable.no-footer {
+    border-bottom: 0;
 }

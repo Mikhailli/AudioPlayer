@@ -4,8 +4,6 @@ audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-bu
     flex: none;
     border: none;
     box-sizing: border-box;
-    width: 35px;
-    height: 30px;
     line-height: 30px;
     margin: 0 6px 0 0;
     padding: 0;
@@ -22,8 +20,6 @@ audio::-webkit-media-controls-play-button {
     flex: none;
     border: none;
     box-sizing: border-box;
-    width: 30px;
-    height: 30px;
     line-height: 30px;
     margin-left: 9px;
     margin-right: 9px;

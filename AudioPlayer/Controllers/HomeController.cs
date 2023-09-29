@@ -19,6 +19,7 @@ public class HomeController : Controller
     public HomeController(IWebHostEnvironment appEnvironment, HttpClient httpClient)
     {
         var context = new ApplicationContext();
+        var name = context.Database.Connection.DataSource;
         _audioServiceClient = new AudiosService(httpClient);
         _appEnvironment = appEnvironment;
         _repository =  new EFAudioRepository(context);
